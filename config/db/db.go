@@ -7,7 +7,7 @@ import (
 
 var session *r.Session
 
-func InitDB() error {
+func Init() error {
 
 	log.Println("Connecting to RethinkDB...")
 
@@ -30,7 +30,7 @@ func InitDB() error {
 	return nil
 }
 
-func CloseDB() error {
+func Close() error {
 	log.Println("Closing connection to RethinkDB...")
 	err := session.Close()
 	if err != nil {
