@@ -5,14 +5,14 @@ import (
 	"log"
 )
 
-var session *r.Session
+var Session *r.Session
 
 func Init() error {
 
 	log.Println("Connecting to RethinkDB...")
 
 	// TODO: Set up actual configuration.
-	session, err := r.Connect(r.ConnectOpts{
+	Session, err := r.Connect(r.ConnectOpts{
 		Address:  "localhost:28015",
 		Database: "test",
 		MaxIdle:  10,
@@ -24,7 +24,7 @@ func Init() error {
 		return err
 	}
 
-	session.SetMaxOpenConns(5)
+	Session.SetMaxOpenConns(5)
 
 	log.Println("Successfully connected to RethinkDB.")
 	return nil
@@ -32,7 +32,7 @@ func Init() error {
 
 func Close() error {
 	log.Println("Closing connection to RethinkDB...")
-	err := session.Close()
+	err := Session.Close()
 	if err != nil {
 		log.Println("Error closing connection to RethinkDB:")
 		log.Println(err.Error())
