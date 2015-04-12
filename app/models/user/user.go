@@ -1,7 +1,9 @@
 package user
 
 import (
+	"crypto/rand"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 	"time"
 )
 
@@ -9,6 +11,7 @@ type User struct {
 	Id           string `gorethink:"id,omitempty"`
 	Username     string
 	PasswordHash string
+	ApiToken     string
 	CreatedAt    time.Time
 }
 
@@ -16,6 +19,13 @@ func NewUser(username, password string) *User {
 	user := new(User)
 	user.CreatedAt = time.Now()
 	user.Username = username
+	randToken := make([]byte, 30)
+	rand.Read(randToken)
+	if err != nil {
+		log.Println("Error: Couldn't generate random API token.")
+		return nil
+	}
+	user.ApiToken = string(randToken)
 	user.PasswordHash = bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 	return user
 }

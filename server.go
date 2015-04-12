@@ -1,9 +1,9 @@
 package main
 
 import (
-	"ease-backend/config/db"
 	"fmt"
 	"github.com/codegangsta/negroni"
+	"github.com/easeapp/web-backend/config/db"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
