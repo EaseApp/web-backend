@@ -2,12 +2,12 @@ package user
 
 import (
 	"crypto/rand"
+	"errors"
 	r "github.com/dancannon/gorethink"
 	"github.com/easeapp/web-backend/config/db"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"time"
-	"errors"
 )
 
 type User struct {
@@ -18,20 +18,26 @@ type User struct {
 	CreatedAt    time.Time
 }
 
-func NewUser(username, password string) *User, error {
+func NewUser(username, password string) (*User, error) {
 	user := new(User)
 	user.CreatedAt = time.Now()
 	user.Username = username
 	randToken := make([]byte, 30)
-	rand.Read(randToken)
+	_, err := rand.Read(randToken)
 	if err != nil {
-		friendlyErr := errors.New("Error: Couldn't generate random API token.")
-		log.Println(friendlyErr)
+		log.Println("Error: Couldn't generate random API token.")
 		log.Println(err)
-		return nil, friendlyErr
+		return nil, err
 	}
 	user.ApiToken = string(randToken)
-	user.PasswordHash = bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	byteHash, err :=
+		bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	user.PasswordHash = string(byteHash)
+	if err != nil {
+		log.Println("Error: Couldn't hash password.")
+		log.Println(err)
+		return nil, err
+	}
 	return user, nil
 }
 

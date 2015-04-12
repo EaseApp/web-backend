@@ -27,6 +27,11 @@ func Init() error {
 	Session.SetMaxOpenConns(5)
 
 	log.Println("Successfully connected to RethinkDB.")
+
+	// Set up the initial user table.
+	r.Db("test").TableCreate("users").RunWrite(Session)
+	r.Table("users").IndexCreate("Username").RunWrite(Session)
+
 	return nil
 }
 
