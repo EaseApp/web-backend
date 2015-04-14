@@ -42,6 +42,12 @@ func NewUser(username, password string) (*User, error) {
 }
 
 func (user *User) Save() error {
+	// Check that a user with the given username doesn't already exist.
+	otherUser := Find(user.Username)
+	if otherUser != nil && user.Id != otherUser.Id {
+		return errors.New("Error: A user with that name already exists.")
+	}
+
 	_, err := r.Table("users").Insert(user).RunWrite(db.Session)
 	if err != nil {
 		friendlyErr := errors.New("Error: Couldn't save user.")
@@ -53,11 +59,25 @@ func (user *User) Save() error {
 }
 
 func Find(username string) *User {
-	// TODO find user.
-	return nil
+	res, err := r.Table("users").Filter(map[string]string{
+		"username": username,
+	}).Run(db.Session)
+	if err != nil || res.IsNil() {
+		return nil
+	}
+	var user *User
+	return res.One(&user)
 }
 
-func AttemptLogin(username, password string) (*User, error) {
-	// TODO find user with given user name, then try password.
-	return nil, nil
+func AttemptLogin(username, password string) *User {
+	user := Find(username)
+	if user == nil {
+		return nil
+	}
+	err :=
+		bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return nil
+	}
+	return user
 }
