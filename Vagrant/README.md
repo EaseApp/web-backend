@@ -23,4 +23,4 @@ Start the server.
 
 ##Go say hello
 
-Visit `192.168.50.10:3000` to see the hello world.
+Visit `localhost:3000` to see the hello world.
