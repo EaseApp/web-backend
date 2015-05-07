@@ -35,6 +35,8 @@ func Init() error {
 	return nil
 }
 
+
+
 func Close() error {
 	log.Println("Closing connection to RethinkDB...")
 	err := Session.Close()

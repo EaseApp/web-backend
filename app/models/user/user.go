@@ -62,12 +62,17 @@ func Find(username string) *User {
 	res, err := r.Table("users").Filter(map[string]string{
 		"username": username,
 	}).Run(db.Session)
-	if err != nil || res.IsNil() {
-		return nil
+
+
+	var row *User
+	err2 := res.One(&row)
+	if err2 == r.ErrEmptyResult || err != nil || err2 != nil {
+	    return nil
 	}
-	var user *User
-	return res.One(&user)
+
+	return row
 }
+
 
 func AttemptLogin(username, password string) *User {
 	user := Find(username)
