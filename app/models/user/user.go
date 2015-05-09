@@ -63,14 +63,12 @@ func Find(username string) *User {
 		"username": username,
 	}).Run(db.Session)
 
-
-	var row *User
-	err2 := res.One(&row)
-	if err2 == r.ErrEmptyResult || err != nil || err2 != nil {
+	var user *User
+	err := res.One(&user)
+	if err == r.ErrEmptyResult || err != nil {
 	    return nil
 	}
-
-	return row
+	return user
 }
 
 

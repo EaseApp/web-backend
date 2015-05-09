@@ -4,17 +4,39 @@ import (
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/easeapp/web-backend/config/db"
+	r "github.com/dancannon/gorethink"
 	"github.com/gorilla/mux"
+	"html/template"
 	"log"
 	"net/http"
-	"html/template"
 	"path"
-	
-
+	"time"
 )
 
+var session *r.Session
 
-func HomePage(w http.ResponseWriter, r *http.Request){
+func init() {
+    var err error
+    session, err = r.Connect(r.ConnectOpts{
+        Address:  "localhost:28015",
+        Database: "test",
+    })
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+}
+
+// Struct tags are used to map struct fields to fields in the database
+type User struct {
+	Id           string `gorethink:"id,omitempty"`
+	Username     string
+	PasswordHash string
+	ApiToken     string
+	CreatedAt    time.Time
+}
+
+func HomePage(w http.ResponseWriter, req *http.Request) {
 
 	// Hash example
 	var hash map[string]string
@@ -32,6 +54,8 @@ func HomePage(w http.ResponseWriter, r *http.Request){
   	http.Error(w, err.Error(), http.StatusInternalServerError)
   }
 
+  rows, _ := r.Table("users").Run(session)
+  fmt.Println(rows.Next(&rows))
 }
 
 func main() {

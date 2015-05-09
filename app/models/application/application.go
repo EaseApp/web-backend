@@ -10,6 +10,7 @@ type Application struct {
 	CreatedAt time.Time
 }
 
+
 func NewApplication() *Application {
 	app := new(Application)
 	app.CreatedAt = time.Now()
