@@ -1,2 +1,3 @@
 rethinkdb_data/
 .vagrant
+gin-bin
