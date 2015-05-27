@@ -11,7 +11,7 @@ func Init() error {
 
 	log.Println("Connecting to RethinkDB...")
 
-	// TODO: Set up actual configuration.
+	// TODO: Set up actual production configuration.
 	Session, err := r.Connect(r.ConnectOpts{
 		Address:  "localhost:28015",
 		Database: "test",
@@ -28,9 +28,7 @@ func Init() error {
 
 	log.Println("Successfully connected to RethinkDB.")
 
-	// Set up the initial user table.
-	r.Db("test").TableCreate("users").RunWrite(Session)
-	r.Table("users").IndexCreate("Username").RunWrite(Session)
+	setupTables()
 
 	return nil
 }
@@ -45,4 +43,16 @@ func Close() error {
 	}
 	log.Println("Successfully closed connection to RethinkDB.")
 	return nil
+}
+
+func setupTables() {
+
+	log.Println("Setting up tables...")
+
+	// Set up the initial user table.
+	// TODO Maybe handle the table already existing?
+	r.Db("test").TableCreate("users").RunWrite(Session)
+	r.Table("users").IndexCreate("Username").RunWrite(Session)
+
+	log.Println("Done setting up tables.")
 }
