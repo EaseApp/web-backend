@@ -9,11 +9,11 @@ Run `vagrant up` within this directory.
 Initial installation and provisioning will take a while.
 
 ##Spin up the server
-One provisioning is complete, ssh into the vagrant box.
+Once provisioning is complete, ssh into the vagrant box.
 
 `vagrant ssh`
 
-Navigate to the projects root.
+Navigate to the project root.
 
 `cd /home/vagrant/go/src/github.com/easeapp/web-backend/`
 
@@ -21,6 +21,12 @@ Start the server.
 
 `go run server.go`
 
+If you wish to have the server restart on file change, run the server with the `run_dev_server.sh` script in the `web-backend` directory:
+
+`./run_dev_server.sh`
+
+
 ##Go say hello
 
 Visit `localhost:3000` to see the hello world.
+
