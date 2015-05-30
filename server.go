@@ -13,7 +13,7 @@ func main() {
 
 	err := db.Init()
 	if err != nil {
-		log.Fatalln("Couldn't connect to DB. Quitting...")
+		log.Fatalln("Couldn't connect to database. Quitting...")
 	}
 	defer db.Close()
 
