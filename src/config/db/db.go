@@ -51,8 +51,8 @@ func setupTables() {
 
 	// Set up the initial user table.
 	// TODO Maybe handle the table already existing?
-	r.DB("test").TableCreate("users").RunWrite(Session)
-	r.Table("users").IndexCreate("Username").RunWrite(Session)
+	//r.DB("test").TableCreate("users").RunWrite(Session)
+	//r.Table("users").IndexCreate("Username").RunWrite(Session)
 
 	log.Println("Done setting up tables.")
 }
