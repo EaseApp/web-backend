@@ -7,6 +7,9 @@ tar -C /usr/local -xzf go1.4.2.linux-amd64.tar.gz
 echo "export PATH=$PATH:/usr/local/go/bin" >> /home/vagrant/.profile;
 export PATH=$PATH:/usr/local/go/bin;
 
+# Install inotify-tools for live code reload.
+sudo apt-get -y install inotify-tools
+
 # Make the dev server script executable.
 chmod a+x /home/vagrant/go/src/github.com/easeapp/web-backend/run_dev_server.sh;
 
