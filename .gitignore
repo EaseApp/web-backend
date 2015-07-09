@@ -1,3 +1,5 @@
 rethinkdb_data/
+pkg/
+bin/
 .vagrant
 gin-bin
