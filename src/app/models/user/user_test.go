@@ -5,5 +5,5 @@ import (
 )
 
 func TestThatWillFail(t *testing.T) {
-	t.Error("Failure")
+	t.Error("Failure3")
 }
