@@ -1,4 +1,4 @@
-APP = github.com/easeapp/web-backend
+APP = github.com/EaseApp/web-backend
 
 .PHONY: build test $(APP)
 
@@ -13,7 +13,7 @@ $(GOPATH)/bin/gb:
 test: $(APP)
 
 $(APP): $(GOPATH)/bin/golint $(GOPATH)/bin/gb
-	gofmt -w=true $(GOPATH)/src/$@/src/
+	@gofmt -w=true $(GOPATH)/src/$@/src/
 	@echo "Linting..."
 	@$(GOPATH)/bin/golint $(GOPATH)/src/$@/src/...
 	@echo ""
