@@ -1,5 +1,7 @@
 # Ease Web Backend
 
+![Build Status](https://travis-ci.org/EaseApp/web-backend.svg?branch=master)
+
 ##Set up your dev enviroment
 Follow the instructions on the README.md in the vagrant directory.
 
@@ -24,3 +26,4 @@ If you wish to have the server restart on file change, run the server with the `
 ##Go say hello
 
 Visit `localhost:3000` to see the hello world.
+
