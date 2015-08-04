@@ -15,7 +15,7 @@ Once provisioning is complete, ssh into the vagrant box.
 
 Navigate to the project root.
 
-`cd /home/vagrant/go/src/github.com/easeapp/web-backend/`
+`cd /home/vagrant/go/src/github.com/EaseApp/web-backend/`
 
 Start the server.
 
