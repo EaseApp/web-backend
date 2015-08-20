@@ -7,6 +7,9 @@ tar -C /usr/local -xzf go1.5.linux-amd64.tar.gz
 echo "export PATH=$PATH:/usr/local/go/bin" >> /home/vagrant/.profile;
 export PATH=$PATH:/usr/local/go/bin;
 
+# Set up GOPATH.
+echo "export GOPATH=/home/vagrant/go" >> /home/vagrant/.profile;
+
 # Install inotify-tools for live code reload.
 sudo apt-get -y install inotify-tools
 
