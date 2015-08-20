@@ -18,7 +18,7 @@ $(GOPATH)/bin/golint:
 test: $(APP)
 
 $(APP): dependencies $(GOPATH)/bin/golint
-	@gofmt -w=true $(GOPATH)src/$@/src/
+	@gofmt -w=true $(GOPATH)/src/$@/src/
 	@echo "Linting..."
 	@$(GOPATH)/bin/golint ./...
 	@echo ""
