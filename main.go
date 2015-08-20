@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/EaseApp/web-backend/src/config/db"
-
 	"fmt"
 	"log"
 	"net/http"
@@ -12,12 +10,7 @@ import (
 )
 
 func main() {
-
-	err := db.Init()
-	if err != nil {
-		log.Fatalln("Couldn't connect to database. Quitting...")
-	}
-	defer db.Close()
+	log.Println("Starting server...")
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
