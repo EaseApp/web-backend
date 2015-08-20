@@ -1,28 +1,34 @@
-APP = github.com/EaseApp/web-backend
+APP=github.com/EaseApp/web-backend
+EXECUTABLES:=$(basename $(notdir $(wildcard src/cmd/*/*.go)))
+
+# Turn on Go 1.5 vendoring.
+export GO15VENDOREXPERIMENT=1
 
 .PHONY: build test $(APP)
 
 all: test build
 
+dependencies:
+	@echo "Getting dependencies..."
+	@go get ./...
+
 $(GOPATH)/bin/golint:
 	@go get -u github.com/golang/lint/golint
 
-$(GOPATH)/bin/gb:
-	@go get github.com/constabulary/gb/...
-
 test: $(APP)
 
-$(APP): $(GOPATH)/bin/golint $(GOPATH)/bin/gb
-	@gofmt -w=true $(GOPATH)/src/$@/src/
+$(APP): dependencies $(GOPATH)/bin/golint
+	@gofmt -w=true $(GOPATH)src/$@/src/
 	@echo "Linting..."
-	@$(GOPATH)/bin/golint $(GOPATH)/src/$@/src/...
+	@$(GOPATH)/bin/golint ./...
 	@echo ""
 	@echo "Testing..."
-	@$(GOPATH)/bin/gb test -v
+	@go test -v ./...
 	@echo ""
 
-build: $(GOPATH)/bin/gb
-	@echo "Building..."
-	@$(GOPATH)/bin/gb build
+build: $(EXECUTABLES)
 
+$(EXECUTABLES): dependencies
+	@echo "Building executable $@..."
+	@go build -o $(addprefix bin/, $@) ./src/cmd/$@
 
