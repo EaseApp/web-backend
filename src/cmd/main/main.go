@@ -1,12 +1,14 @@
 package main
 
 import (
-	"config/db"
+	"github.com/EaseApp/web-backend/src/config/db"
+
 	"fmt"
-	"github.com/codegangsta/negroni"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+
+	"github.com/codegangsta/negroni"
+	"github.com/gorilla/mux"
 )
 
 func main() {

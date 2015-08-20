@@ -1,8 +1,9 @@
 package db
 
 import (
-	r "github.com/dancannon/gorethink"
 	"log"
+
+	r "github.com/dancannon/gorethink"
 )
 
 var Session *r.Session
