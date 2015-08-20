@@ -1,9 +1,9 @@
 sudo apt-get -y install git;
 sudo apt-get -y install mercurial;
 
-# Install Go 1.4.2
-wget --quiet https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.4.2.linux-amd64.tar.gz
+# Install Go 1.5
+wget --quiet https://storage.googleapis.com/golang/go1.5.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.5.linux-amd64.tar.gz
 echo "export PATH=$PATH:/usr/local/go/bin" >> /home/vagrant/.profile;
 export PATH=$PATH:/usr/local/go/bin;
 
