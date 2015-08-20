@@ -18,11 +18,11 @@ $(APP): $(GOPATH)/bin/golint $(GOPATH)/bin/gb
 	@$(GOPATH)/bin/golint $(GOPATH)/src/$@/src/...
 	@echo ""
 	@echo "Testing..."
-	@gb test -v
+	@$(GOPATH)/bin/gb test -v
 	@echo ""
 
 build: $(GOPATH)/bin/gb
 	@echo "Building..."
-	@gb build
+	@$(GOPATH)/bin/gb build
 
 
