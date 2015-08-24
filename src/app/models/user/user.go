@@ -1,13 +1,15 @@
 package user
 
 import (
-	"config/db"
+	"github.com/EaseApp/web-backend/src/config/db"
+
 	"crypto/rand"
 	"errors"
-	r "github.com/dancannon/gorethink"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"time"
+
+	r "github.com/dancannon/gorethink"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
