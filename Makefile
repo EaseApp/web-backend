@@ -34,5 +34,5 @@ $(GOPATH)/bin/gin:
 
 dev-server: $(GOPATH)/bin/gin
 	@echo "Starting dev server..."
-	@gin
+	@$(GOPATH)/bin/gin
 
