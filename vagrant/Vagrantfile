@@ -15,8 +15,11 @@ Vagrant.configure(2) do |config|
     # Change this if you are having issues with IP collisions
     #config.vm.network "private_network", ip: "192.168.50.10"
 
-    #Forward all port 3000 traffic to port 80
+    # Ease web server port:
     config.vm.network "forwarded_port", guest: 3000, host: 3000
+
+    # Rethinkdb config port:
+    config.vm.network "forwarded_port", guest: 8080, host: 8080
 
     # Share an additional folder to the guest VM. The first argument is
     # the path on the host to the actual folder. The second argument is
