@@ -1,8 +1,8 @@
 package user
 
-import (
-	"github.com/EaseApp/web-backend/src/config/db"
+/*
 
+import (
 	"crypto/rand"
 	"errors"
 	"log"
@@ -86,4 +86,4 @@ func AttemptLogin(username, password string) *User {
 		return nil
 	}
 	return user
-}
+}*/
