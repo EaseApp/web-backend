@@ -9,7 +9,7 @@ all: test build
 
 dependencies:
 	@echo "Getting dependencies..."
-	@go get ./...
+	@go get -t ./...
 
 $(GOPATH)/bin/golint:
 	@go get -u github.com/golang/lint/golint
