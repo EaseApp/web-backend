@@ -17,16 +17,7 @@ Navigate to the project root.
 
 `cd /home/vagrant/go/src/github.com/EaseApp/web-backend/`
 
-Start the server.
+Install the dependencies.
+`make dependencies`
 
-`go run server.go`
-
-If you wish to have the server restart on file change, run the server with the `run_dev_server.sh` script in the `web-backend` directory:
-
-`./run_dev_server.sh`
-
-
-##Go say hello
-
-Visit `localhost:3000` to see the hello world.
-
+ Your dev environment should be ready to go!
