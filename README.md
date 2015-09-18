@@ -12,15 +12,15 @@ ssh into the vagrant box.
 
 Navigate to the project root.
 
-`cd /home/vagrant/go/src/github.com/easeapp/web-backend/`
+`cd /home/vagrant/go/src/github.com/EaseApp/web-backend/`
 
 Start the server.
 
 `go run server.go`
 
-If you wish to have the server restart on file change, run the server with the `run_dev_server.sh` script in the `web-backend` directory:
+If you wish to have the server restart on file change, run the server with `gin` in the `web-backend` directory:  
 
-`./run_dev_server.sh`
+`gin`
 
 
 ##Go say hello
