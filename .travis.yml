@@ -20,4 +20,4 @@ global:
 - secure: sEaDznnwssHYeUtEY+xTwJsMR5p6rs2hMFOZgev72qqLeoNNzBTYf+S8O5Pbw1mLoZXzMicFMMq2r6plTyTdfexUzIwX0yLU2+s6v1xS6sAoV6DFXW+tr3wzPFvU7M/EUedfnALR5KLpZAXCe0oiZLEhD6ZP0WpVQp7EBtPvK5oQZVQ5V1qaaIjAlyerJP0FQyhYmLSdH0pXWdQT6ZR5h/kcQuVeJLxuQv69MCnh6+ySXh4Yc3U7dJ1gzMT4i3ddjp7jZ2polbrC3cLSMcS1KVzBS4RARv+vwrcowMvn91GFbl0fgUfu9EhRyXJTqPHG5HMZu8yyY9SXb5s+Vt4ens4WUPvUGlY7TwLkaEmmzK1tzoTJP3Lt56wOrocljt6WPQW7W/odzoVXNOAOux4w7lS29LSMjfFrXFIMh/08wG4BE9cyCPCzY8PN4y1ZAKPmB2x6arsviZOij6zbRwXkzsuqEu+YSrcGvBtQAVpgikIAFb8vzqIrlcj+ztgfuMBNgM2U203+cthDfrtlAe2Romz/Jod3tQYXbtXT367SHEDRbFfOIF5UbRqvcq0HlRG1cLTwXiLauMXViAnQ9z8RVGTcik0lWw4M8+kNENYXt+oC8wL71QqX1Zu1oZUduEH5j1c9hu6bB00lYeihXlngLjRxStDAL+mPhmbKWFyEknk=
 
 after_success:
-  "curl --ftp-create-dirs -T "bin/main" -u $FTP_USER:$FTP_PASSWORD ftp://ease-62q56ueo.cloudapp.net"
+  "curl --ftp-create-dirs -T bin/main -u $FTP_USER:$FTP_PASSWORD ftp://ease-62q56ueo.cloudapp.net"
