@@ -1,5 +1,32 @@
 package user
 
+import(
+	"log"
+	r "github.com/dancannon/gorethink"
+	"encoding/json"
+
+)
+
+type User struct{
+	Id string `gorethink:"id,omitempty"`
+	Username string
+	Email	string
+	Password string
+}
+
+func FindUser(Id string, session *r.Session) (string){
+	result, err := r.DB("ease").Table("users").Get(Id).Run(session)
+	if err != nil{
+		log.Println(err)
+	}
+	return printObj(result)
+}
+
+func printObj(v interface{}) (string) {
+    vBytes, _ := json.Marshal(v)
+    return (string(vBytes))
+}
+
 /*
 
 import (

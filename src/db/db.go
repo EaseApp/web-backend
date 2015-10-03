@@ -20,6 +20,7 @@ func NewClient(addr string) (*Client, error) {
 		Address: addr,
 		MaxIdle: 10,
 		MaxOpen: 10,
+		Database: "ease",
 	})
 	if err != nil {
 		log.Println("Error connecting to RethinkdB:")
@@ -30,6 +31,20 @@ func NewClient(addr string) (*Client, error) {
 	log.Println("Successfully connected to RethinkDB.")
 
 	return &Client{Session: session}, nil
+}
+
+func CreateEaseDb(c *Client){
+	_, err := r.DBCreate("ease").RunWrite(c.Session)
+	if err != nil{
+		log.Println(err)
+	}
+}
+
+func CreateUserDb(c *Client){
+	_, err := r.DB("ease").TableCreate("users").RunWrite(c.Session)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // Close closes the connection to the database.
