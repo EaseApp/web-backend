@@ -8,20 +8,30 @@ import (
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
 	"github.com/EaseApp/web-backend/src/app/models/user"
-	r "github.com/dancannon/gorethink"
+	// r "github.com/dancannon/gorethink"
+	// "strconv"
 )
 
-func DbsHandler(w http.ResponseWriter, req *http.Request, session *r.Session){
+func FetchAllHandler(w http.ResponseWriter, req *http.Request){
 	vars := mux.Vars(req)
 
-	username := vars["user"]
-	db := vars["db"]
+	// username := vars["user"]
+	table := vars["db"]
+	// n, _ := strconv.Atoi(db)
 
-
-
-	fmt.Fprintf(w, "Welcome to db. User: (%v). Db: (%v). Finding user: (%v)", username, db, user.FindUser(username, session))
-
+	fmt.Fprintf(w, "Table: (%v). All records: (%v)", table, user.FetchAll(table))
 }
+
+
+func DBCountHandler(w http.ResponseWriter, req *http.Request){
+	vars := mux.Vars(req)
+	db := vars["db"]
+	// n, _ := strconv.Atoi(db)
+
+	// Move RecordCount out of user DAO and into generic DAO
+	fmt.Fprintf(w, "Db (%v) has (%v) objects.", db, user.RecordCount(db))
+}
+
 
 func main() {
 	log.Println("Starting server...")
@@ -34,13 +44,15 @@ func main() {
 	db.CreateEaseDb(client)
 	db.CreateUserDb(client)
 
+	user.Init()
+
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "Welcome to the home page!")
 	})
-	router.HandleFunc("/{user}/{db}", func(w http.ResponseWriter, req *http.Request) {
-		DbsHandler(w, req, client.Session)
-	})
+	router.HandleFunc("/count/{db}", DBCountHandler);
+	router.HandleFunc("/{db}", FetchAllHandler)
+	// router.HandleFunc("/{user}/{db}", FetchAllHandler)
 
 
 

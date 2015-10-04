@@ -4,8 +4,10 @@ import(
 	"log"
 	r "github.com/dancannon/gorethink"
 	"encoding/json"
-
+	"strconv"
 )
+
+var session *r.Session
 
 type User struct{
 	Id string `gorethink:"id,omitempty"`
@@ -14,8 +16,60 @@ type User struct{
 	Password string
 }
 
-func FindUser(Id string, session *r.Session) (string){
+func Init() {
+    var err error
+    session, err = r.Connect(r.ConnectOpts{
+        Address:  "localhost:28015",
+        Database: "ease",
+    })
+
+    if err != nil {
+        log.Println(err)
+        return
+    }
+}
+
+
+
+func FindUser(Id string) (string){
 	result, err := r.DB("ease").Table("users").Get(Id).Run(session)
+	if err != nil{
+		log.Println(err)
+	}
+	return printObj(result)
+}
+
+func Insert() string{
+	var data = map[string]interface{}{
+        "Name":  "David Davidson",
+        "Place": "Somewhere",
+  }
+	result, err := r.DB("ease").Table("users").Insert(data).RunWrite(session)
+	if err != nil{
+		log.Println(err)
+		return ""
+	}
+	log.Println(printObj(result))
+	return result.GeneratedKeys[0]
+}
+
+
+func RecordCount(db string) string {
+    cursor, err := r.DB("ease").Table(db).Count().Run(session)
+    if err != nil {
+        log.Println(err)
+        return strconv.Itoa(-1)
+    }
+
+    var cnt int
+    cursor.One(&cnt)
+    cursor.Close()
+
+    return printObj(cnt)
+}
+
+func GetNth(n int) (string){
+	result, err := r.DB("ease").Table("users").Limit(n).Run(session)
 	if err != nil{
 		log.Println(err)
 	}
@@ -25,6 +79,28 @@ func FindUser(Id string, session *r.Session) (string){
 func printObj(v interface{}) (string) {
     vBytes, _ := json.Marshal(v)
     return (string(vBytes))
+}
+
+func FetchAll(table string) string{
+    rows, err := r.Table(table).Run(session)
+    if err != nil {
+        log.Println(err)
+        return "Table "+table+" doesn't exist"
+    }
+
+    // Read records into persons slice
+    var records []User
+    err2 := rows.All(&records)
+    if err2 != nil {
+        log.Println(err2)
+        return "error caught2"
+    }
+
+		result := ""
+    for _, p := range records {
+        result += printObj(p)
+    }
+		return result
 }
 
 /*
