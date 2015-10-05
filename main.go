@@ -58,8 +58,8 @@ func main() {
 	router.HandleFunc("/count/{db}", DBCountHandler)
 	router.HandleFunc("/{db}", user.FetchAllHandler)
 
-	router.HandleFunc("/{client}/{application}", application.QueryApplicationHandler).Methods("GET")
-	router.HandleFunc("/{client}/{application}", application.CreateApplicationHandler).Methods("POST")
+	router.HandleFunc("/{client}/{application}", application.QueryApplicationHandler).Methods("POST")
+	router.HandleFunc("/{client}/{application}/new", application.CreateApplicationHandler).Methods("POST")
 
 	defer client.Close()
 

@@ -8,7 +8,7 @@ import(
   "github.com/gorilla/mux"
 	r "github.com/dancannon/gorethink"
   dao "github.com/EaseApp/web-backend/src/app/dao"
-	// "encoding/json"
+	"encoding/json"
 )
 
 var session *r.Session
@@ -25,7 +25,17 @@ func QueryApplicationHandler(w http.ResponseWriter, req *http.Request){
   vars := mux.Vars(req)
 	client := vars["client"]
   application := vars["application"]
-  result := dao.QueryApplication(client, application, "{}")
+
+  decoder := json.NewDecoder(req.Body)
+  var m map[string]string
+  err := decoder.Decode(&m)
+  if err != nil{
+    log.Println(err)
+    fmt.Println("Decoding error. Make sure your request body has a JSON object that ONLY has STRINGS.")
+  }
+  log.Println(m)
+
+  result := dao.QueryApplication(client, application, m)
 
   fmt.Fprintf(w, "%v", result)
 }

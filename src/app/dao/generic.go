@@ -33,17 +33,24 @@ func PrintObj(v interface{}) (string) {
     return (string(vBytes))
 }
 
-func QueryApplication(client, application, matchObject string)(string){
+func QueryApplication(client, application string, matchObject map[string]string)(string){
   tableName := fmt.Sprintf("%v_%v", client, application)
-  cursor, err := r.DB("ease").Table(tableName).Count().Run(session)
-  if err != nil{
+  res, err := r.DB("ease").Table(tableName).Filter(matchObject).Run(session)
+  if err != nil {
     log.Println(err)
-    return strconv.Itoa(-1)
+    return "Error"
   }
-  var cnt int
-  cursor.One(&cnt)
-  cursor.Close()
-  return PrintObj(cnt)
+  var records []map[string]string
+  err = res.All(&records)
+  if err != nil {
+      log.Println(err)
+      return "error caught"
+  }
+  result := ""
+  for _, p := range records {
+      result += PrintObj(p)
+  }
+  return result
 }
 
 func CreateApplication(client, application string)(string){
