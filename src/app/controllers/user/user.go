@@ -4,17 +4,19 @@ import(
 	"fmt"
 	"log"
 	r "github.com/dancannon/gorethink"
-	"encoding/json"
-	"strconv"
+	// "strconv"
 	"crypto/rand"
 	"time"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"github.com/gorilla/mux"
 	"errors"
+	dao "github.com/EaseApp/web-backend/src/app/dao"
 	// "net/url"
 	// "github.com/EaseApp/web-backend/src/app/models/user"
 )
+
+var session *r.Session
 
 type User struct{
 	Id string `gorethink:"id,omitempty"`
@@ -22,11 +24,12 @@ type User struct{
 	Email	string
 	PasswordHash string
 	ApiToken string
+	LoginToken string
+	LoginTokenUpdatedAt time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-var session *r.Session
 
 func (user *User) Save() error {
 	// Check that a user with the given username doesn't already exist.
@@ -72,7 +75,7 @@ func SignUpHandler(w http.ResponseWriter, req *http.Request){
 			log.Println(w, "Error2: %v", err)
 			fmt.Fprintf(w, "Problem saving")
 	} else {
-		fmt.Fprintf(w, "%v", "Signed Up")
+		fmt.Fprintf(w, "%v", user.LoginToken)
 	}
 }
 
@@ -84,16 +87,11 @@ func FetchAllHandler(w http.ResponseWriter, req *http.Request){
 }
 
 // Initialize connection and set global session variable
-func Init() {
-    var err error
-    session, err = r.Connect(r.ConnectOpts{
-        Address:  "localhost:28015",
-        Database: "ease",
-    })
-    if err != nil {
-        log.Println(err)
-        return
-    }
+func Init(s *r.Session) {
+	if s == nil{
+		log.Fatal("Generic DAO initialize failure")
+	}
+	session = s
 }
 
 
@@ -125,18 +123,6 @@ func InsertStaticUser() string{
 	return result.GeneratedKeys[0]
 }
 
-// Custom method to return db record count
-func RecordCount(db string) string {
-    cursor, err := r.DB("ease").Table(db).Count().Run(session)
-    if err != nil {
-        log.Println(err)
-        return strconv.Itoa(-1)
-    }
-    var cnt int
-    cursor.One(&cnt)
-    cursor.Close()
-    return printObj(cnt)
-}
 
 // Custom method to get last n objects
 func GetNth(n int) (string){
@@ -166,12 +152,6 @@ func FetchAll(table string) string{
         result += printObj(p)
     }
 		return result
-}
-
-// Provided method by gorethink example for printing in memory object
-func printObj(v interface{}) (string) {
-    vBytes, _ := json.Marshal(v)
-    return (string(vBytes))
 }
 
 // Provided method
@@ -208,6 +188,7 @@ func NewUser(username, password string) (*User, error) {
 	user := new(User)
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
+	user.LoginTokenUpdatedAt = time.Now()
 	user.Username = username
 	randToken := make([]byte, 30)
 	_, err := rand.Read(randToken)
@@ -217,8 +198,17 @@ func NewUser(username, password string) (*User, error) {
 		return nil, err
 	}
 	user.ApiToken = string(randToken)
-	byteHash, err :=
-		bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	randToken = make([]byte, 30)
+	_, err = rand.Read(randToken)
+	if err != nil {
+		log.Println("Error: Couldn't generate random API token for Login.")
+		log.Println(err)
+		return nil, err
+	}
+	user.LoginToken = string(randToken)
+
+	byteHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	user.PasswordHash = string(byteHash)
 	if err != nil {
 		log.Println("Error: Couldn't hash password.")
@@ -228,15 +218,6 @@ func NewUser(username, password string) (*User, error) {
 	return user, nil
 }
 
-
-/*
-
-import (
-
-	"log"
-
-)
-
-
-
-*/
+func printObj(v interface{})(string){
+	return dao.PrintObj(v)
+}

@@ -40,12 +40,20 @@ func CreateEaseDb(c *Client){
 	}
 }
 
-func CreateUserDb(c *Client){
+func CreateUserTable(c *Client){
 	_, err := r.DB("ease").TableCreate("users").RunWrite(c.Session)
 	if err != nil {
 		log.Println(err)
 	}
 }
+
+func CreateDbTable(c *Client){
+	_, err := r.DB("ease").TableCreate("dbs").RunWrite(c.Session)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 
 // Close closes the connection to the database.
 func (c *Client) Close() error {
