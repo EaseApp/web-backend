@@ -7,31 +7,32 @@ import (
 	"github.com/EaseApp/web-backend/src/db"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
-	"github.com/EaseApp/web-backend/src/app/models/user"
-	// r "github.com/dancannon/gorethink"
-	// "strconv"
+	user "github.com/EaseApp/web-backend/src/app/controllers/user"
+
 )
 
-func FetchAllHandler(w http.ResponseWriter, req *http.Request){
-	vars := mux.Vars(req)
 
-	// username := vars["user"]
-	table := vars["db"]
-	// n, _ := strconv.Atoi(db)
 
-	fmt.Fprintf(w, "Table: (%v). All records: (%v)", table, user.FetchAll(table))
+// func SignUpHandler(w http.ResponseWriter, req *http.Request){
+// 	vars := mux.Vars(req)
+// 	table := vars["db"]
+//
+// 	fmt.Fprintf(w, "Table: (%v). All records: (%v)", table, user.FetchAll(table))
+// }
+
+
+func NewStaticUserHandler(w http.ResponseWriter, req *http.Request){
+	_ = user.InsertStaticUser()
+	http.Redirect(w, req, "/users", http.StatusFound)
 }
-
 
 func DBCountHandler(w http.ResponseWriter, req *http.Request){
 	vars := mux.Vars(req)
 	db := vars["db"]
-	// n, _ := strconv.Atoi(db)
 
 	// Move RecordCount out of user DAO and into generic DAO
 	fmt.Fprintf(w, "Db (%v) has (%v) objects.", db, user.RecordCount(db))
 }
-
 
 func main() {
 	log.Println("Starting server...")
@@ -50,11 +51,13 @@ func main() {
 	router.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "Welcome to the home page!")
 	})
-	router.HandleFunc("/count/{db}", DBCountHandler);
-	router.HandleFunc("/{db}", FetchAllHandler)
+	router.HandleFunc("/{db}", user.FetchAllHandler)
+	router.HandleFunc("/count/{db}", DBCountHandler)
+	router.HandleFunc("/static/user/new", NewStaticUserHandler)
+
+	router.HandleFunc("/users/sign_in", user.SignInHandler)
+	router.HandleFunc("/users/sign_up", user.SignUpHandler)
 	// router.HandleFunc("/{user}/{db}", FetchAllHandler)
-
-
 
 	defer client.Close()
 
