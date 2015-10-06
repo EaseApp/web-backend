@@ -87,8 +87,15 @@ func UpdateApplicationHandler(w http.ResponseWriter, req *http.Request){
 }
 
 // Destroy endpoint
-// func DestroyApplicationHandler(w http.ResponseWriter, req *http.Request){
-// }
+func DeleteApplicationHandler(w http.ResponseWriter, req *http.Request){
+  vars := mux.Vars(req)
+	client := vars["client"]
+  application := vars["application"]
+  id := vars["id"]
+
+  result := dao.DeleteApplication(client, application, id)
+  fmt.Fprintf(w, "%v", result)
+}
 
 
 func PubSubApplicationHandler(w http.ResponseWriter, req *http.Request){

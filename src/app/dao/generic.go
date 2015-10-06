@@ -67,6 +67,16 @@ func CreateApplication(client, application string)(string){
   return tableName
 }
 
+func DeleteApplication(client, application, id string)(string){
+  tableName := getTableName(client, application)
+  result, err := r.DB("ease").Table(tableName).Get(id).Delete().RunWrite(session)
+  if err != nil{
+    log.Println(err)
+    return "-1"
+  }
+  return PrintObj(result)
+}
+
 func UpdateApplication(client, application, id string, object map[string]interface{})(string){
   tableName := getTableName(client, application)
   result, err := r.DB("ease").Table(tableName).Get(id).Update(object).RunWrite(session)

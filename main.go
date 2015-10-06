@@ -80,7 +80,7 @@ func main() {
 	router.HandleFunc("/{client}/{application}/new", application.CreateApplicationHandler).Methods("POST")
 	// router.HandleFunc("/{client}/{application}/pubsub", websocket.Handler(EchoServer))
 	router.HandleFunc("/{client}/{application}/{id}", application.UpdateApplicationHandler).Methods("PUT")
-	// router.HandleFunc("/{client}/{application}/{id}", application.DeleteApplicationHandler).Methods("DELETE)
+	router.HandleFunc("/{client}/{application}/{id}", application.DeleteApplicationHandler).Methods("DELETE")
 
 
 	defer client.Close()
