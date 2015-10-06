@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<style>
+.sep{
+  margin-top:20px;
+}
+</style>
+<html lang="en">
+  <head>
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> -->
+  </head>
+  <body style="padding-left:30px;">
+    <h1>Welcome to Ease</h1>
+
+    <div><a href="/users">/users</a></div>
+    <div><a href="/count/users">/count/users</a></div>
+    <div><a href="/count/drew_test">/count/drew_test</a></div>
+    <div><a href="/drew/test">/drew/test</a></div>
+
+
+    <div class="sep">
+      UTILITY
+      <div><a href="/static/user/new">Insert Static User</a></div>
+    </div>
+    <div class="sep">
+      <div>LOGIN - You have to provide login creds via URL params u (username) and p (password) for now</div>
+      <div><a href="/users/sign_in">Sign In</a></div>
+      <div><a href="/users/sign_up">Sign Up</a></div>
+
+      <div><a href="/users/sign_in?u=drew&p=123">Sign In Example</a></div>
+      <div><a href="/users/sign_up?u=drew&p=123">Sign Up Example</a></div>
+    </div>
+
+
+
+  </body>
+</html>

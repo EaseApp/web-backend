@@ -89,3 +89,8 @@ func UpdateApplicationHandler(w http.ResponseWriter, req *http.Request){
 // Destroy endpoint
 // func DestroyApplicationHandler(w http.ResponseWriter, req *http.Request){
 // }
+
+
+func PubSubApplicationHandler(w http.ResponseWriter, req *http.Request){
+	fmt.Fprintf(w,"Sup")
+}

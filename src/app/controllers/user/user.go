@@ -73,9 +73,9 @@ func SignUpHandler(w http.ResponseWriter, req *http.Request){
 	err = user.Save()
 	if err != nil {
 			log.Println(w, "Error2: %v", err)
-			fmt.Fprintf(w, "Problem saving")
+			fmt.Fprintf(w, "%v", err)
 	} else {
-		fmt.Fprintf(w, "%v", user.LoginToken)
+		fmt.Fprintf(w, user.LoginToken)
 	}
 }
 
