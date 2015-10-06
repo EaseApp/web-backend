@@ -33,14 +33,18 @@ func PrintObj(v interface{}) (string) {
     return (string(vBytes))
 }
 
-func QueryApplication(client, application string, matchObject map[string]string)(string){
-  tableName := fmt.Sprintf("%v_%v", client, application)
+func getTableName(client, application string)(string){
+  return fmt.Sprintf("%v_%v", client, application)
+}
+
+func QueryApplication(client, application string, matchObject map[string]interface{})(string){
+  tableName := getTableName(client, application)
   res, err := r.DB("ease").Table(tableName).Filter(matchObject).Run(session)
   if err != nil {
     log.Println(err)
     return "Error"
   }
-  var records []map[string]string
+  var records []map[string]interface{}
   err = res.All(&records)
   if err != nil {
       log.Println(err)
@@ -54,11 +58,21 @@ func QueryApplication(client, application string, matchObject map[string]string)
 }
 
 func CreateApplication(client, application string)(string){
-  tableName := fmt.Sprintf("%v_%v", client, application)
+  tableName := getTableName(client, application)
   _, err := r.DB("ease").TableCreate(tableName).RunWrite(session)
 	if err != nil {
 		log.Println(err)
     return "-1"
 	}
   return tableName
+}
+
+func UpdateApplication(client, application, id string, object map[string]interface{})(string){
+  tableName := getTableName(client, application)
+  result, err := r.DB("ease").Table(tableName).Get(id).Update(object).RunWrite(session)
+  if err != nil{
+    log.Println(err)
+    return "-1"
+  }
+  return PrintObj(result)
 }
