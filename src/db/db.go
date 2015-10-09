@@ -20,7 +20,6 @@ func NewClient(addr string) (*Client, error) {
 		Address: addr,
 		MaxIdle: 10,
 		MaxOpen: 10,
-		Database: "ease",
 	})
 	if err != nil {
 		log.Println("Error connecting to RethinkdB:")
@@ -33,27 +32,36 @@ func NewClient(addr string) (*Client, error) {
 	return &Client{Session: session}, nil
 }
 
-func CreateEaseDb(c *Client){
+// SetUpDatabase creates the needed tables.
+func (c *Client) SetUpDatabase() error {
+	err := createEaseDb(c)
+	if err != nil {
+		return err
+	}
+	err = createUserTable(c)
+	if err != nil {
+		return err
+	}
+	err = createApplicationTable(c)
+	return err
+}
+
+func createEaseDb(c *Client) error {
 	_, err := r.DBCreate("ease").RunWrite(c.Session)
-	if err != nil{
-		log.Println(err)
-	}
+	return err
 }
 
-func CreateUserTable(c *Client){
+func createUserTable(c *Client) error {
 	_, err := r.DB("ease").TableCreate("users").RunWrite(c.Session)
-	if err != nil {
-		log.Println(err)
-	}
+
+	return err
 }
 
-func CreateDbTable(c *Client){
-	_, err := r.DB("ease").TableCreate("dbs").RunWrite(c.Session)
-	if err != nil {
-		log.Println(err)
-	}
-}
+func createApplicationTable(c *Client) error {
+	_, err := r.DB("ease").TableCreate("applications").RunWrite(c.Session)
 
+	return err
+}
 
 // Close closes the connection to the database.
 func (c *Client) Close() error {

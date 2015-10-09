@@ -1,35 +1,34 @@
 package controller
 
-import(
+import (
 	"fmt"
-	"log"
 	r "github.com/dancannon/gorethink"
+	"log"
 	// "strconv"
 	"crypto/rand"
-	"time"
-	"golang.org/x/crypto/bcrypt"
-	"net/http"
-	"github.com/gorilla/mux"
 	"errors"
 	dao "github.com/EaseApp/web-backend/src/app/dao"
+	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
+	"net/http"
+	"time"
 	// "net/url"
 	// "github.com/EaseApp/web-backend/src/app/models/user"
 )
 
 var session *r.Session
 
-type User struct{
-	Id string `gorethink:"id,omitempty"`
-	Username string
-	Email	string
-	PasswordHash string
-	ApiToken string
-	LoginToken string
+type User struct {
+	Id                  string `gorethink:"id,omitempty"`
+	Username            string
+	Email               string
+	PasswordHash        string
+	ApiToken            string
+	LoginToken          string
 	LoginTokenUpdatedAt time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
 }
-
 
 func (user *User) Save() error {
 	// Check that a user with the given username doesn't already exist.
@@ -49,37 +48,37 @@ func (user *User) Save() error {
 	return nil
 }
 
-func SignInHandler(w http.ResponseWriter, req *http.Request){
+func SignInHandler(w http.ResponseWriter, req *http.Request) {
 	username := req.URL.Query().Get("u")
 	password := req.URL.Query().Get("p")
 
 	result := AttemptLogin(username, password)
-	if result != nil{
-			fmt.Fprintf(w, "Successful login")
+	if result != nil {
+		fmt.Fprintf(w, "Successful login")
 	} else {
-			fmt.Fprintf(w, "Login failed")
+		fmt.Fprintf(w, "Login failed")
 	}
 
 }
 
-func SignUpHandler(w http.ResponseWriter, req *http.Request){
+func SignUpHandler(w http.ResponseWriter, req *http.Request) {
 	username := req.URL.Query().Get("u")
 	password := req.URL.Query().Get("p")
 
 	user, err := NewUser(username, password)
 	if err != nil {
-			log.Println(w, "Error: %v", err)
+		log.Println(w, "Error: %v", err)
 	}
 	err = user.Save()
 	if err != nil {
-			log.Println(w, "Error2: %v", err)
-			fmt.Fprintf(w, "%v", err)
+		log.Println(w, "Error2: %v", err)
+		fmt.Fprintf(w, "%v", err)
 	} else {
 		fmt.Fprintf(w, user.LoginToken)
 	}
 }
 
-func FetchAllHandler(w http.ResponseWriter, req *http.Request){
+func FetchAllHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	table := vars["db"]
 
@@ -88,34 +87,33 @@ func FetchAllHandler(w http.ResponseWriter, req *http.Request){
 
 // Initialize connection and set global session variable
 func Init(s *r.Session) {
-	if s == nil{
+	if s == nil {
 		log.Fatal("Generic DAO initialize failure")
 	}
 	session = s
 }
 
-
 // Custom method to find user by Rethink ID
-func FindUser(Id string) (string){
+func FindUser(Id string) string {
 	result, err := r.DB("ease").Table("users").Get(Id).Run(session)
-	if err != nil{
+	if err != nil {
 		log.Println(err)
 	}
 	return printObj(result)
 }
 
 // Custom method to add seed or extra data
-func InsertStaticUser() string{
+func InsertStaticUser() string {
 	var data = map[string]interface{}{
-		"Username": fmt.Sprintf("User-%v", time.Now()),
-		"Email": "email@domain.com",
+		"Username":     fmt.Sprintf("User-%v", time.Now()),
+		"Email":        "email@domain.com",
 		"PasswordHash": "static_passwordhash",
-		"ApiToken": "Idk what this is yet",
-		"CreatedAt": time.Now(),
-		"UpdatedAt": time.Now(),
-  }
+		"ApiToken":     "Idk what this is yet",
+		"CreatedAt":    time.Now(),
+		"UpdatedAt":    time.Now(),
+	}
 	result, err := r.DB("ease").Table("users").Insert(data).RunWrite(session)
-	if err != nil{
+	if err != nil {
 		log.Println(err)
 		return ""
 	}
@@ -123,35 +121,34 @@ func InsertStaticUser() string{
 	return result.GeneratedKeys[0]
 }
 
-
 // Custom method to get last n objects
-func GetNth(n int) (string){
+func GetNth(n int) string {
 	result, err := r.DB("ease").Table("users").Limit(n).Run(session)
-	if err != nil{
+	if err != nil {
 		log.Println(err)
 	}
 	return printObj(result)
 }
 
 // Custom method to make large string of all db records
-func FetchAll(table string) string{
-    rows, err := r.Table(table).Run(session)
-    if err != nil {
-        log.Println(err)
-        return "Table "+table+" doesn't exist"
-    }
-    // Read records into persons slice
-    var records []User
-    err2 := rows.All(&records)
-    if err2 != nil {
-        log.Println(err2)
-        return "error caught2"
-    }
-		result := ""
-    for _, p := range records {
-        result += printObj(p)
-    }
-		return result
+func FetchAll(table string) string {
+	rows, err := r.Table(table).Run(session)
+	if err != nil {
+		log.Println(err)
+		return "Table " + table + " doesn't exist"
+	}
+	// Read records into persons slice
+	var records []User
+	err2 := rows.All(&records)
+	if err2 != nil {
+		log.Println(err2)
+		return "error caught2"
+	}
+	result := ""
+	for _, p := range records {
+		result += printObj(p)
+	}
+	return result
 }
 
 // Provided method
@@ -218,6 +215,6 @@ func NewUser(username, password string) (*User, error) {
 	return user, nil
 }
 
-func printObj(v interface{})(string){
+func printObj(v interface{}) string {
 	return dao.PrintObj(v)
 }

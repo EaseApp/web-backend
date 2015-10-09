@@ -1,103 +1,102 @@
 package controller
 
-import(
-  "fmt"
+import (
+	"fmt"
 	"log"
-  "net/http"
+	"net/http"
 	// "strconv"
-  "github.com/gorilla/mux"
-	r "github.com/dancannon/gorethink"
-  dao "github.com/EaseApp/web-backend/src/app/dao"
 	"encoding/json"
-  "io"
+	dao "github.com/EaseApp/web-backend/src/app/dao"
+	r "github.com/dancannon/gorethink"
+	"github.com/gorilla/mux"
+	"io"
 )
 
 var session *r.Session
 
 // Initialize connection and set global session variable
 func Init(s *r.Session) {
-	if s == nil{
+	if s == nil {
 		log.Fatal("Generic DAO initialize failure")
 	}
 	session = s
 }
 
-func decodeIOStreamToJSON(body io.Reader)(map[string]interface{}, error){
-  decoder := json.NewDecoder(body)
-  var m map[string]interface{}
-  err := decoder.Decode(&m)
+func decodeIOStreamToJSON(body io.Reader) (map[string]interface{}, error) {
+	decoder := json.NewDecoder(body)
+	var m map[string]interface{}
+	err := decoder.Decode(&m)
 
-  if err != nil{
-    return nil, err
-  }
-  return m, nil
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // Search application given a JSON object in the body
-func QueryApplicationHandler(w http.ResponseWriter, req *http.Request){
-  vars := mux.Vars(req)
+func QueryApplicationHandler(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
 	client := vars["client"]
-  application := vars["application"]
+	application := vars["application"]
 
-  obj, err := decodeIOStreamToJSON(req.Body)
-  if err == io.EOF{
-    emptyMap := make(map[string]interface{})
-    fmt.Fprintf(w, "%v", dao.QueryApplication(client, application, emptyMap))
-  } else if err != nil{
-    log.Println(err)
-    fmt.Fprintf(w, "Decoding error.")
-  } else{
-    log.Println(obj)
-    result := dao.QueryApplication(client, application, obj)
-    fmt.Fprintf(w, "%v", result)
-  }
+	obj, err := decodeIOStreamToJSON(req.Body)
+	if err == io.EOF {
+		emptyMap := make(map[string]interface{})
+		fmt.Fprintf(w, "%v", dao.QueryApplication(client, application, emptyMap))
+	} else if err != nil {
+		log.Println(err)
+		fmt.Fprintf(w, "Decoding error.")
+	} else {
+		log.Println(obj)
+		result := dao.QueryApplication(client, application, obj)
+		fmt.Fprintf(w, "%v", result)
+	}
 }
 
 // Creates new application
-func CreateApplicationHandler(w http.ResponseWriter, req *http.Request){
-  vars := mux.Vars(req)
+func CreateApplicationHandler(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
 	client := vars["client"]
-  application := vars["application"]
-  result := dao.CreateApplication(client, application)
+	application := vars["application"]
+	result := dao.CreateApplication(client, application)
 
-  fmt.Fprintf(w, "%v", result)
+	fmt.Fprintf(w, "%v", result)
 }
 
 // Update endpoint
-func UpdateApplicationHandler(w http.ResponseWriter, req *http.Request){
-  vars := mux.Vars(req)
+func UpdateApplicationHandler(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
 	client := vars["client"]
-  application := vars["application"]
-  id := vars["id"]
-  log.Println(id)
+	application := vars["application"]
+	id := vars["id"]
+	log.Println(id)
 
-  obj, err := decodeIOStreamToJSON(req.Body)
-  if err == io.EOF{
-    fmt.Fprintf(w, "No update or invalid object provided")
-  }
-  if err != nil{
-    log.Println(err)
-    fmt.Fprintf(w, "Decoding error.")
-  } else {
-    log.Println(obj)
-    result := dao.UpdateApplication(client, application, id, obj)
-    fmt.Fprintf(w, "%v", result)
-  }
-  // Add pub-sub
+	obj, err := decodeIOStreamToJSON(req.Body)
+	if err == io.EOF {
+		fmt.Fprintf(w, "No update or invalid object provided")
+	}
+	if err != nil {
+		log.Println(err)
+		fmt.Fprintf(w, "Decoding error.")
+	} else {
+		log.Println(obj)
+		result := dao.UpdateApplication(client, application, id, obj)
+		fmt.Fprintf(w, "%v", result)
+	}
+	// Add pub-sub
 }
 
 // Destroy endpoint
-func DeleteApplicationHandler(w http.ResponseWriter, req *http.Request){
-  vars := mux.Vars(req)
+func DeleteApplicationHandler(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
 	client := vars["client"]
-  application := vars["application"]
-  id := vars["id"]
+	application := vars["application"]
+	id := vars["id"]
 
-  result := dao.DeleteApplication(client, application, id)
-  fmt.Fprintf(w, "%v", result)
+	result := dao.DeleteApplication(client, application, id)
+	fmt.Fprintf(w, "%v", result)
 }
 
-
-func PubSubApplicationHandler(w http.ResponseWriter, req *http.Request){
-	fmt.Fprintf(w,"Sup")
+func PubSubApplicationHandler(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprintf(w, "Sup")
 }

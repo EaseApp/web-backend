@@ -50,9 +50,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Couldn't initialize database: ", err.Error())
 	}
-	db.CreateEaseDb(client)
-	db.CreateUserTable(client)
-	db.CreateDbTable(client)
+	client.SetUpDatabase()
 	// CreatePubSubServer()
 
 	dao.Init(client.Session)
