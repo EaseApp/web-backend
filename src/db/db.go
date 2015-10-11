@@ -36,14 +36,19 @@ func NewClient(addr string) (*Client, error) {
 func (c *Client) SetUpDatabase() error {
 	err := createEaseDb(c)
 	if err != nil {
-		return err
+		// log.Println(err)
 	}
 	err = createUserTable(c)
 	if err != nil {
-		return err
+		// log.Println(err)
 	}
 	err = createApplicationTable(c)
-	return err
+	if err != nil {
+		// log.Println(err)
+	}
+
+	// Probably not the best, but everytime we start the server, we expect these errors
+	return nil
 }
 
 func createEaseDb(c *Client) error {
@@ -53,13 +58,11 @@ func createEaseDb(c *Client) error {
 
 func createUserTable(c *Client) error {
 	_, err := r.DB("ease").TableCreate("users").RunWrite(c.Session)
-
 	return err
 }
 
 func createApplicationTable(c *Client) error {
 	_, err := r.DB("ease").TableCreate("applications").RunWrite(c.Session)
-
 	return err
 }
 

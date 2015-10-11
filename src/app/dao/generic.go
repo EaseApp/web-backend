@@ -3,15 +3,27 @@ package dao
 import (
 	"encoding/json"
 	"fmt"
+	. "github.com/EaseApp/web-backend/src/app/models"
 	r "github.com/dancannon/gorethink"
+
 	"log"
 	"strconv"
 )
 
 var session *r.Session
 
-func Init(s *r.Session) {
+// InitGeneric sets the rethinkDB session. This name  must be unique in the dao package. TODO: Use DRY pattern for this
+func InitGeneric(s *r.Session) {
 	session = s
+}
+
+// GetNth returns a string of the last n objects
+func GetNth(n int) string {
+	result, err := r.DB("ease").Table("users").Limit(n).Run(session)
+	if err != nil {
+		log.Println(err)
+	}
+	return PrintObj(result)
 }
 
 // Custom method to return db record count
@@ -33,56 +45,27 @@ func PrintObj(v interface{}) string {
 	return (string(vBytes))
 }
 
-func getTableName(client, application string) string {
+func GetTableName(client, application string) string {
 	return fmt.Sprintf("%v_%v", client, application)
 }
 
-func QueryApplication(client, application string, matchObject map[string]interface{}) string {
-	tableName := getTableName(client, application)
-	res, err := r.DB("ease").Table(tableName).Filter(matchObject).Run(session)
+// FetchAll makes a large string of all db records in a given table
+func FetchAll(table string) string {
+	rows, err := r.DB("ease").Table(table).Run(session)
 	if err != nil {
 		log.Println(err)
-		return "Error"
+		return "Table " + table + " doesn't exist"
 	}
-	var records []map[string]interface{}
-	err = res.All(&records)
-	if err != nil {
-		log.Println(err)
-		return "error caught"
+	// Read records into persons slice
+	var records []User
+	err2 := rows.All(&records)
+	if err2 != nil {
+		log.Println(err2)
+		return "error caught2"
 	}
 	result := ""
 	for _, p := range records {
 		result += PrintObj(p)
 	}
 	return result
-}
-
-func CreateApplication(client, application string) string {
-	tableName := getTableName(client, application)
-	_, err := r.DB("ease").TableCreate(tableName).RunWrite(session)
-	if err != nil {
-		log.Println(err)
-		return "-1"
-	}
-	return tableName
-}
-
-func DeleteApplication(client, application, id string) string {
-	tableName := getTableName(client, application)
-	result, err := r.DB("ease").Table(tableName).Get(id).Delete().RunWrite(session)
-	if err != nil {
-		log.Println(err)
-		return "-1"
-	}
-	return PrintObj(result)
-}
-
-func UpdateApplication(client, application, id string, object map[string]interface{}) string {
-	tableName := getTableName(client, application)
-	result, err := r.DB("ease").Table(tableName).Get(id).Update(object).RunWrite(session)
-	if err != nil {
-		log.Println(err)
-		return "-1"
-	}
-	return PrintObj(result)
 }

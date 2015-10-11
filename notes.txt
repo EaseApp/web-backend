@@ -1,0 +1,3 @@
+-Util function to make 400 error with err as json
+-Use JSON encoder and deocer
+-Use structs for each endpoint (RequestStruct)
