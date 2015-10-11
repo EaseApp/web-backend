@@ -1,4 +1,4 @@
-package user
+package models
 
 import (
 	"crypto/rand"
@@ -21,19 +21,19 @@ type User struct {
 	CreatedAt    time.Time
 }
 
-// Querier queries the user table and logs users in.
-type Querier struct {
+// UserQuerier queries the user table and logs users in.
+type UserQuerier struct {
 	session *r.Session
 }
 
-// NewQuerier returns a new Querier.
-func NewQuerier(session *r.Session) *Querier {
-	return &Querier{session: session}
+// NewUserQuerier returns a new UserQuerier.
+func NewUserQuerier(session *r.Session) *UserQuerier {
+	return &UserQuerier{session: session}
 }
 
 // NewUser creates a new user with tokens and a hashed password.
 func NewUser(username, password string) (*User, error) {
-	user := new(User)
+	user := &User{}
 	user.CreatedAt = time.Now()
 	user.Username = username
 	apiToken, err := generateRandomString(30)
@@ -65,7 +65,7 @@ func NewUser(username, password string) (*User, error) {
 // Save saves the given user and returns it.
 // It verifies that the given username isn't already taken.
 // Returns the updated user.
-func (querier *Querier) Save(user *User) (*User, error) {
+func (querier *UserQuerier) Save(user *User) (*User, error) {
 	// Check that a user with the given username doesn't already exist.
 	otherUser := querier.Find(user.Username)
 	if otherUser != nil && user.ID != otherUser.ID {
@@ -93,7 +93,7 @@ func (querier *Querier) Save(user *User) (*User, error) {
 }
 
 // Find finds the user with the given username.  Returns nil if none found.
-func (querier *Querier) Find(username string) *User {
+func (querier *UserQuerier) Find(username string) *User {
 	res, err := r.Table("users").Filter(map[string]string{
 		"username": username,
 	}).Run(querier.session)
@@ -110,7 +110,7 @@ func (querier *Querier) Find(username string) *User {
 
 // AttemptLogin attempts to login the user with the given username and password.
 // Returns the user if successful, nil if failed.
-func (querier *Querier) AttemptLogin(username, password string) *User {
+func (querier *UserQuerier) AttemptLogin(username, password string) *User {
 	user := querier.Find(username)
 	if user == nil {
 		return nil
