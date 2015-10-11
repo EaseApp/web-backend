@@ -13,12 +13,12 @@ import (
 
 // User holds attribute for an Ease user.
 type User struct {
-	ID           string `gorethink:"id,omitempty"`
-	Username     string
-	PasswordHash string
-	APIToken     string
-	LoginToken   string
-	CreatedAt    time.Time
+	ID           string    `gorethink:"id,omitempty"`
+	Username     string    `gorethink:"username"`
+	PasswordHash string    `gorethink:"password_hash"`
+	APIToken     string    `gorethink:"api_token"`
+	LoginToken   string    `gorethink:"login_token"`
+	CreatedAt    time.Time `gorethink:"created_at"`
 }
 
 // UserQuerier queries the user table and logs users in.
@@ -69,7 +69,7 @@ func (querier *UserQuerier) Save(user *User) (*User, error) {
 	// Check that a user with the given username doesn't already exist.
 	otherUser := querier.Find(user.Username)
 	if otherUser != nil && user.ID != otherUser.ID {
-		return nil, errors.New("Error: A user with that name already exists.")
+		return nil, errors.New("A user with that name already exists.")
 	}
 
 	// Upsert the user.
@@ -78,7 +78,7 @@ func (querier *UserQuerier) Save(user *User) (*User, error) {
 	).RunWrite(querier.session)
 
 	if err != nil {
-		friendlyErr := errors.New("Error: Couldn't save user.")
+		friendlyErr := errors.New("Couldn't save user.")
 		log.Println(friendlyErr)
 		log.Println(err)
 		return nil, friendlyErr
@@ -110,17 +110,17 @@ func (querier *UserQuerier) Find(username string) *User {
 
 // AttemptLogin attempts to login the user with the given username and password.
 // Returns the user if successful, nil if failed.
-func (querier *UserQuerier) AttemptLogin(username, password string) *User {
+func (querier *UserQuerier) AttemptLogin(username, password string) (*User, error) {
 	user := querier.Find(username)
 	if user == nil {
-		return nil
+		return nil, errors.New("Couldn't find user with that username")
 	}
 	err :=
 		bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
-		return nil
+		return nil, errors.New("Password was invalid")
 	}
-	return user
+	return user, nil
 }
 
 // Possible token chars.
