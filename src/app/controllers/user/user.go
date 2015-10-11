@@ -26,16 +26,31 @@ var session *r.Session
 
 // SignInHandler takes username and password and checks whether the hashes match
 func SignInHandler(w http.ResponseWriter, req *http.Request) {
-	username := req.URL.Query().Get("u")
-	password := req.URL.Query().Get("p")
-
-	result := AttemptLogin(username, password)
-	if result != nil {
-		fmt.Fprintf(w, "Successful login")
+	obj, err := helper.DecodeIOStreamToJSON(req.Body)
+	if err == io.EOF {
+		fmt.Fprintf(w, "No creds provided.")
+	} else if err != nil {
+		log.Println(err)
+		fmt.Fprintf(w, PrintObj(err))
 	} else {
-		fmt.Fprintf(w, "Login failed")
-	}
+		username := obj["username"]
+		sUsername, usernameOk := username.(string)
 
+		password := obj["password"]
+		sPassword, passwordOk := password.(string)
+		if usernameOk && passwordOk {
+			result := AttemptLogin(sUsername, sPassword)
+			if result != nil {
+				// fmt.Fprintf(w, "%v", PrintObj(helper.SuccessfulRequest(result.LoginToken)))
+				fmt.Fprintf(w, "%v", result.LoginToken)
+			} else {
+				// fmt.Fprintf(w, PrintObj(helper.FailedRequest("Ayyy lmao")))
+				fmt.Fprintf(w, "Ayy lmao")
+			}
+		} else {
+			fmt.Fprintf(w, "Creds are not strings")
+		}
+	}
 }
 
 // SignUpHandler takes username and password in URL, makes a new user, and returns a token
@@ -52,6 +67,7 @@ func SignUpHandler(w http.ResponseWriter, req *http.Request) {
 
 		password := obj["password"]
 		sPassword, passwordOk := password.(string)
+
 		if usernameOk && passwordOk {
 			user, err := NewUser(sUsername, sPassword)
 			if err != nil {

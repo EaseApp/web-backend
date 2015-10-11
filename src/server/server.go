@@ -17,8 +17,6 @@ func StartServer() {
 	if err != nil {
 		log.Fatal("Couldn't initialize database: ", err.Error())
 	}
-	client.SetUpDatabase()
-	// CreatePubSubServer()
 
 	err = client.SetUpDatabase()
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"github.com/EaseApp/web-backend/src/app/controllers/application"
 	"github.com/EaseApp/web-backend/src/app/controllers/home"
 	"github.com/EaseApp/web-backend/src/app/controllers/user"
+	"github.com/easeapp/web-backend/src/app/helpers"
 	"github.com/gorilla/mux"
 	// "net/http"
 )
@@ -15,7 +16,7 @@ func CreateRouting() *mux.Router {
 
 	router.HandleFunc("/", home.IndexHandler)
 
-	router.HandleFunc("/static/user/new", user.NewStaticUserHandler)
+	router.HandleFunc("/static/user/new", helper.RequireAPIToken(user.NewStaticUserHandler))
 
 	// These should be POST, but it's easier to test with GET
 	router.HandleFunc("/users/sign_in", user.SignInHandler)

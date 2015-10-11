@@ -19,10 +19,8 @@ func DecodeIOStreamToJSON(body io.Reader) (map[string]interface{}, error) {
 }
 
 // RequireAPIToken requires token
-func RequireAPIToken(handler http.HandlerFunc) http.HandlerFunc{
-	return func(w http.ResponseWriter, r *http.Request){
-		if
-	}
+func RequireAPIToken() {
+
 }
 
 // RequireAPIToken requires token
