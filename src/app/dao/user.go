@@ -3,10 +3,11 @@ package dao
 import (
 	"errors"
 	"fmt"
-	. "github.com/EaseApp/web-backend/src/app/models"
-	r "github.com/dancannon/gorethink"
 	"log"
 	"time"
+
+	. "github.com/EaseApp/web-backend/src/app/models"
+	r "github.com/dancannon/gorethink"
 )
 
 // Find attempts to find user by username

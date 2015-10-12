@@ -13,7 +13,7 @@ import (
 	. "github.com/EaseApp/web-backend/src/app/dao"
 	. "github.com/EaseApp/web-backend/src/app/models"
 
-	"github.com/EaseApp/web-backend/src/app/helpers"
+	"github.com/EaseApp/web-backend/src/app/helper"
 
 	r "github.com/dancannon/gorethink"
 

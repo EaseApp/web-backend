@@ -9,7 +9,7 @@ import (
 	"io"
 
 	"github.com/EaseApp/web-backend/src/app/dao"
-	"github.com/EaseApp/web-backend/src/app/helpers"
+	"github.com/EaseApp/web-backend/src/app/helper"
 
 	r "github.com/dancannon/gorethink"
 	"github.com/gorilla/mux"

@@ -2,30 +2,56 @@ package helper
 
 import (
 	"encoding/json"
-	// "github.com/EaseApp/web-backend/src/app/models"
+	"fmt"
 	"io"
 	"log"
+	"net/http"
+
+	"github.com/EaseApp/web-backend/src/app/dao"
+	"github.com/gorilla/mux"
 )
 
 func DecodeIOStreamToJSON(body io.Reader) (map[string]interface{}, error) {
 	decoder := json.NewDecoder(body)
 	var m map[string]interface{}
 	err := decoder.Decode(&m)
-
 	if err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-// RequireAPIToken requires token
-func RequireAPIToken() {
+func hasValidPermissions(token string, req *http.Request) bool {
+	vars := mux.Vars(req)
+	c := vars["client"]
+	client := dao.Find(c)
+	if client.APIToken == token {
+		return true
+	}
+	return false
+}
 
+// RequireAPIToken requires token
+func RequireAPIToken(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		token := req.Header.Get("Authorization")
+
+		// log.Println("Token:" + token)
+		if token != "" {
+			log.Println(token)
+			if hasValidPermissions(token, req) {
+				handler(w, req)
+			} else {
+				fmt.Fprintf(w, "Token invalid")
+			}
+		} else {
+			fmt.Fprintf(w, "Token not provided.")
+		}
+	}
 }
 
 // RequireAPIToken requires token
 func RequireLoginToken() {
-
 }
 
 // func SuccessfulRequest(data string) models.Response {

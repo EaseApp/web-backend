@@ -3,8 +3,9 @@ package dao
 import (
 	// "encoding/json"
 	// "fmt"
-	r "github.com/dancannon/gorethink"
 	"log"
+
+	r "github.com/dancannon/gorethink"
 	// "strconv"
 )
 

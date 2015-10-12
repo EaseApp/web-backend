@@ -4,7 +4,7 @@ import (
 	"github.com/EaseApp/web-backend/src/app/controllers/application"
 	"github.com/EaseApp/web-backend/src/app/controllers/home"
 	"github.com/EaseApp/web-backend/src/app/controllers/user"
-	"github.com/easeapp/web-backend/src/app/helpers"
+	"github.com/EaseApp/web-backend/src/app/helper"
 	"github.com/gorilla/mux"
 	// "net/http"
 )
@@ -16,7 +16,7 @@ func CreateRouting() *mux.Router {
 
 	router.HandleFunc("/", home.IndexHandler)
 
-	router.HandleFunc("/static/user/new", helper.RequireAPIToken(user.NewStaticUserHandler))
+	router.HandleFunc("/static/user/new", user.NewStaticUserHandler)
 
 	// These should be POST, but it's easier to test with GET
 	router.HandleFunc("/users/sign_in", user.SignInHandler)
@@ -25,11 +25,18 @@ func CreateRouting() *mux.Router {
 	router.HandleFunc("/count/{db}", home.DBCountHandler)
 	router.HandleFunc("/{db}", user.FetchAllHandler)
 
-	router.HandleFunc("/{client}/{application}", application.QueryApplicationHandler)
-	router.HandleFunc("/{client}/{application}/new", application.CreateApplicationHandler).Methods("POST")
+	// Query
+	router.HandleFunc("/{client}/{application}", helper.RequireAPIToken(application.QueryApplicationHandler))
+
+	// New Application
+	router.HandleFunc("/{client}/{application}/new", helper.RequireAPIToken(application.CreateApplicationHandler)).Methods("POST")
+
+	// Update application record
+	router.HandleFunc("/{client}/{application}/{id}", helper.RequireAPIToken(application.UpdateApplicationHandler)).Methods("PUT")
+
+	// Delete application record
+	router.HandleFunc("/{client}/{application}/{id}", helper.RequireAPIToken(application.DeleteApplicationHandler)).Methods("DELETE")
 	// router.HandleFunc("/{client}/{application}/pubsub", websocket.Handler(EchoServer))
-	router.HandleFunc("/{client}/{application}/{id}", application.UpdateApplicationHandler).Methods("PUT")
-	router.HandleFunc("/{client}/{application}/{id}", application.DeleteApplicationHandler).Methods("DELETE")
 
 	return router
 }
