@@ -66,6 +66,13 @@ func NewUser(username, password string) (*User, error) {
 // It verifies that the given username isn't already taken.
 // Returns the updated user.
 func (querier *UserQuerier) Save(user *User) (*User, error) {
+	r.DB("test").Table("users").Delete().Exec(querier.Session)
+	r.DB("test").Table("users").Insert(map[string]string{"hello": "world"}).RunWrite(querier.Session)
+	r.DB("test").Table("users").Insert(struct{ prop string }{prop: "I am a string."}).RunWrite(querier.Session)
+	r.DB("test").Table("users").Insert(User{Username: "hi", CreatedAt: time.Now()}).RunWrite(querier.Session)
+	log.Println("DID STUFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2")
+	t.Log("I DID THE USER STUFF AND DID NOT FAIL.2")
+
 	// Check that a user with the given username doesn't already exist.
 	otherUser := querier.Find(user.Username)
 	if otherUser != nil && user.ID != otherUser.ID {
