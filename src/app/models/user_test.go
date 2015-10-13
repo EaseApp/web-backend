@@ -81,5 +81,6 @@ func getDBClient(t *testing.T) *db.Client {
 
 	// Clear the user table for the tests.
 	r.DB("test").Table("users").Delete().Exec(client.Session)
+	r.DB("test").Table("users").Insert(map[string]string{"hello": "world"}).RunWrite(client.Session)
 	return client
 }
