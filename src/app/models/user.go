@@ -73,9 +73,7 @@ func (querier *UserQuerier) Save(user *User) (*User, error) {
 	}
 
 	// Upsert the user.
-	res, err := r.DB("test").Table("users").Insert(
-		user, r.InsertOpts{Conflict: "replace"},
-	).RunWrite(querier.session)
+	res, err := r.DB("test").Table("users").Insert(user).RunWrite(querier.session)
 
 	if err != nil {
 		friendlyErr := errors.New("Couldn't save user")
