@@ -13,12 +13,12 @@ import (
 
 // User holds attribute for an Ease user.
 type User struct {
-	ID           string    `gorethink:"id,omitempty"`
-	Username     string    `gorethink:"username"`
-	PasswordHash string    `gorethink:"password_hash"`
-	APIToken     string    `gorethink:"api_token"`
-	LoginToken   string    `gorethink:"login_token"`
-	CreatedAt    time.Time `gorethink:"created_at"`
+	ID           string    `gorethink:"id,omitempty" json:"id"`
+	Username     string    `gorethink:"username" json:"username"`
+	PasswordHash string    `gorethink:"password_hash" json:"-"`
+	APIToken     string    `gorethink:"api_token" json:"api_token"`
+	LoginToken   string    `gorethink:"login_token" json:"login_token"`
+	CreatedAt    time.Time `gorethink:"created_at" json:"created_at"`
 }
 
 // UserQuerier queries the user table and logs users in.

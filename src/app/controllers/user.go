@@ -25,10 +25,18 @@ type userParams struct {
 
 // SignInHandler handles user sign ins.
 func SignInHandler(w http.ResponseWriter, req *http.Request) {
-	_, err := parseUserParams(w, req)
+	params, err := parseUserParams(w, req)
 	if err != nil {
 		return
 	}
+
+	user, err := querier.AttemptLogin(params.Username, params.Password)
+	if err != nil {
+		sendError(http.StatusUnauthorized, err, w)
+		return
+	}
+
+	json.NewEncoder(w).Encode(user)
 }
 
 // SignUpHandler handles user sign up.
@@ -48,7 +56,6 @@ func SignUpHandler(w http.ResponseWriter, req *http.Request) {
 
 	user, err = querier.Save(user)
 	if err != nil {
-		log.Println("Error: " + err.Error())
 		sendError(http.StatusBadRequest, err, w)
 		return
 	}
