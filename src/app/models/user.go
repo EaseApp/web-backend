@@ -73,7 +73,7 @@ func (querier *UserQuerier) Save(user *User) (*User, error) {
 	}
 
 	// Upsert the user.
-	res, err := r.Table("users").Insert(
+	res, err := r.DB("test").Table("users").Insert(
 		user, r.InsertOpts{Conflict: "replace"},
 	).RunWrite(querier.session)
 
@@ -94,7 +94,7 @@ func (querier *UserQuerier) Save(user *User) (*User, error) {
 
 // Find finds the user with the given username.  Returns nil if none found.
 func (querier *UserQuerier) Find(username string) *User {
-	res, err := r.Table("users").Filter(map[string]string{
+	res, err := r.DB("test").Table("users").Filter(map[string]string{
 		"username": username,
 	}).Run(querier.session)
 	if err != nil || res.IsNil() {
