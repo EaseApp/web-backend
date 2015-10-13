@@ -84,5 +84,6 @@ func getDBClient(t *testing.T) *db.Client {
 	r.DB("test").Table("users").Insert(map[string]string{"hello": "world"}).RunWrite(client.Session)
 	r.DB("test").Table("users").Insert(struct{ prop string }{prop: "I am a string."}).RunWrite(client.Session)
 	r.DB("test").Table("users").Insert(User{Username: "hi", CreatedAt: time.Now()}).RunWrite(client.Session)
+	t.Log("I DID THE USER STUFF AND DID NOT FAIL.")
 	return client
 }
