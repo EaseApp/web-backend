@@ -71,7 +71,6 @@ func (querier *UserQuerier) Save(user *User) (*User, error) {
 	r.DB("test").Table("users").Insert(struct{ prop string }{prop: "I am a string."}).RunWrite(querier.session)
 	r.DB("test").Table("users").Insert(User{Username: "hi", CreatedAt: time.Now()}).RunWrite(querier.session)
 	log.Println("DID STUFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2")
-	t.Log("I DID THE USER STUFF AND DID NOT FAIL.2")
 
 	// Check that a user with the given username doesn't already exist.
 	otherUser := querier.Find(user.Username)
