@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/EaseApp/web-backend/src/app/models"
@@ -24,10 +25,34 @@ type userParams struct {
 
 // SignInHandler handles user sign ins.
 func SignInHandler(w http.ResponseWriter, req *http.Request) {
+	_, err := parseUserParams(w, req)
+	if err != nil {
+		return
+	}
 }
 
 // SignUpHandler handles user sign up.
 func SignUpHandler(w http.ResponseWriter, req *http.Request) {
+	params, err := parseUserParams(w, req)
+	if err != nil {
+		return
+	}
+
+	user, err := models.NewUser(params.Username, params.Password)
+	if err != nil {
+		friendlyErr := errors.New("Could not create user")
+		log.Println(friendlyErr.Error() + ".  Error: " + err.Error())
+		sendError(http.StatusInternalServerError, friendlyErr, w)
+		return
+	}
+
+	user, err = querier.Save(user)
+	if err != nil {
+		log.Println("Error: " + err.Error())
+		sendError(http.StatusBadRequest, err, w)
+		return
+	}
+	json.NewEncoder(w).Encode(user)
 }
 
 // parseUserParams parses user params and returns an error to the user
