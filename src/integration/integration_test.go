@@ -158,6 +158,7 @@ func getDBClient(t *testing.T) *db.Client {
 
 	// Clear the user table for the tests.
 	r.DB("test").TableDrop("users").Exec(client.Session)
+	r.Wait(r.WaitOpts{WaitFor: "ready_for_writes", Timeout: 300})
 	r.DB("test").TableCreate("users").Exec(client.Session)
 	r.Wait(r.WaitOpts{WaitFor: "ready_for_writes", Timeout: 300})
 	return client
