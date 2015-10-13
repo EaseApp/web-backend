@@ -1,6 +1,9 @@
 package server
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/EaseApp/web-backend/src/app/controllers"
 	"github.com/EaseApp/web-backend/src/app/models"
 	"github.com/EaseApp/web-backend/src/db"
@@ -16,6 +19,10 @@ func CreateRoutingMux(client *db.Client) *mux.Router {
 	controllers.InitUserController(userQuerier)
 
 	router := mux.NewRouter()
+
+	router.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		fmt.Fprintf(w, "Welcome to the home page!")
+	})
 
 	// User routes.
 	router.HandleFunc("/users/sign_up", controllers.SignUpHandler).Methods("POST")
