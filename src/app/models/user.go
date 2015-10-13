@@ -73,10 +73,10 @@ func (querier *UserQuerier) Save(user *User) (*User, error) {
 	log.Println("DID STUFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2")
 
 	// Check that a user with the given username doesn't already exist.
-	otherUser := querier.Find(user.Username)
+	/*otherUser := querier.Find(user.Username)
 	if otherUser != nil && user.ID != otherUser.ID {
 		return nil, errors.New("A user with that name already exists")
-	}
+	}*/
 
 	// Upsert the user.
 	res, err := r.DB("test").Table("users").Insert(*user).RunWrite(querier.session)
