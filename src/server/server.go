@@ -15,8 +15,11 @@ func CreateRoutingMux(client *db.Client) *mux.Router {
 
 	controllers.InitUserController(userQuerier)
 
-	router := mux.Router()
+	router := mux.NewRouter()
 
-	//	router.HandleFunc().Methods("POST")
+	// User routes.
+	router.HandleFunc("/users/sign_up", controllers.SignUpHandler).Methods("POST")
+	router.HandleFunc("/users/sign_in", controllers.SignInHandler).Methods("POST")
+
 	return router
 }
