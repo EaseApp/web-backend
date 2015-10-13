@@ -43,6 +43,12 @@ func TestSignUp(t *testing.T) {
 			expectedError:    "A user with that name already exists",
 			expectedUsername: "",
 		},
+		{
+			input:            `{"password": "pass"}`,
+			expectedCode:     http.StatusBadRequest,
+			expectedError:    "Username or password cannot be blank",
+			expectedUsername: "",
+		},
 	}
 
 	for _, testcase := range testcases {
@@ -63,9 +69,72 @@ func TestSignUp(t *testing.T) {
 	}
 }
 
+func TestSignIn(t *testing.T) {
+	server := setUpServer(t)
+	defer server.Close()
+
+	// Create a test user for signing in with.
+	resp := sendJSON(`{"username":"ronswanson","password":"meat"}`,
+		server.URL, "/users/sign_up", "POST", t)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	var testUser models.User
+	err := json.NewDecoder(resp.Body).Decode(&testUser)
+	require.NoError(t, err)
+	userAPIToken := testUser.APIToken
+
+	testcases := []struct {
+		input            string
+		expectedCode     int
+		expectedError    string
+		expectedUsername string
+		expectedAPIToken string
+	}{
+		{
+			input:            `{"username": "ronswanson", "password": "meat"}`,
+			expectedCode:     http.StatusOK,
+			expectedError:    "",
+			expectedUsername: "user",
+			expectedAPIToken: userAPIToken,
+		},
+		{
+			input:            `{"username": "anneperkins", "password": "pass"}`,
+			expectedCode:     http.StatusUnauthorized,
+			expectedError:    "Couldn't find user with that username",
+			expectedUsername: "",
+			expectedAPIToken: "",
+		},
+		{
+			input:            `{"username": "anneperkins", "password": "pass"}`,
+			expectedCode:     http.StatusUnauthorized,
+			expectedError:    "Password was invalid",
+			expectedUsername: "",
+			expectedAPIToken: "",
+		},
+	}
+
+	for _, testcase := range testcases {
+		resp := sendJSON(testcase.input, server.URL, "/users/sign_in", "POST", t)
+
+		assert.Equal(t, testcase.expectedCode, resp.StatusCode)
+
+		// No error expected.
+		if testcase.expectedError == "" {
+			var errStruct errorResp
+			json.NewDecoder(resp.Body).Decode(&errStruct)
+			assert.Equal(t, testcase.expectedError, errStruct.Err)
+		} else { // Error expected.
+			var userStruct models.User
+			json.NewDecoder(resp.Body).Decode(&userStruct)
+			assert.Equal(t, testcase.expectedUsername, userStruct.Username)
+			assert.Equal(t, testcase.expectedAPIToken, userStruct.APIToken)
+		}
+	}
+
+}
+
 func sendJSON(jsonInput, url, path, method string, t *testing.T) *http.Response {
 	var jsonStr = []byte(jsonInput)
-	req, err := http.NewRequest("POST", url+path, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest(method, url+path, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
