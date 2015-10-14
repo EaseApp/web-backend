@@ -157,6 +157,7 @@ func getDBClient(t *testing.T) *db.Client {
 	require.NoError(t, err)
 
 	// Clear the user table for the tests.
-	r.DB("test").Table("users").Delete().Exec(client.Session)
+	r.DB("test").TableDrop("users").Exec(client.Session)
+	r.DB("test").TableCreate("users").Exec(client.Session)
 	return client
 }

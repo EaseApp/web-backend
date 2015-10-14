@@ -66,22 +66,16 @@ func NewUser(username, password string) (*User, error) {
 // It verifies that the given username isn't already taken.
 // Returns the updated user.
 func (querier *UserQuerier) Save(user *User) (*User, error) {
-	r.DB("test").Table("users").Delete().Exec(querier.session)
-	r.DB("test").Table("users").Insert(map[string]string{"hello": "world"}).RunWrite(querier.session)
-	r.DB("test").Table("users").Insert(struct{ prop string }{prop: "I am a string."}).RunWrite(querier.session)
-	r.DB("test").Table("users").Insert(User{Username: "hi", CreatedAt: time.Now()}).RunWrite(querier.session)
-	log.Println("DID STUFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2")
-	r.DB("test").Table("users").Insert(*user).RunWrite(querier.session)
-	log.Println("DID STUFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3")
-
 	// Check that a user with the given username doesn't already exist.
-	/*otherUser := querier.Find(user.Username)
+	otherUser := querier.Find(user.Username)
 	if otherUser != nil && user.ID != otherUser.ID {
 		return nil, errors.New("A user with that name already exists")
-	}*/
+	}
 
 	// Upsert the user.
-	res, err := r.DB("test").Table("users").Insert(*user).RunWrite(querier.session)
+	res, err := r.Table("users").Insert(
+		user, r.InsertOpts{Conflict: "replace"},
+	).RunWrite(querier.session)
 
 	if err != nil {
 		friendlyErr := errors.New("Couldn't save user")
@@ -100,7 +94,7 @@ func (querier *UserQuerier) Save(user *User) (*User, error) {
 
 // Find finds the user with the given username.  Returns nil if none found.
 func (querier *UserQuerier) Find(username string) *User {
-	res, err := r.DB("test").Table("users").Filter(map[string]string{
+	res, err := r.Table("users").Filter(map[string]string{
 		"username": username,
 	}).Run(querier.session)
 	if err != nil || res.IsNil() {

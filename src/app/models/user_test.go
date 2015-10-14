@@ -1,7 +1,6 @@
 package models
 
 import (
-	"log"
 	"testing"
 	"time"
 
@@ -81,25 +80,7 @@ func getDBClient(t *testing.T) *db.Client {
 	require.NoError(t, err)
 
 	// Clear the user table for the tests.
-	var response map[string]interface{}
-	res, err := r.Wait().Run(client.Session)
-	res.One(&response)
-	log.Println("WAIT RESPONSE:")
-	log.Println(response)
-	res, err = r.DB("test").Table("users").Status().Run(client.Session)
-	log.Println("TABLE STATUS RESPONSE:")
-	res.One(&response)
-	log.Println(response)
-	r.Wait(r.WaitOpts{WaitFor: "all_replicas_ready"}).Exec(client.Session)
-	r.Wait(r.WaitOpts{WaitFor: "ready_for_writes"}).Exec(client.Session)
-	r.DB("test").Table("users").Delete().Exec(client.Session)
-	r.Wait(r.WaitOpts{WaitFor: "ready_for_writes"}).Exec(client.Session)
-	r.Wait(r.WaitOpts{WaitFor: "all_replicas_ready"}).Exec(client.Session)
-	r.DB("test").Table("users").Insert(map[string]string{"hello": "world"}).RunWrite(client.Session)
-	_, err = r.DB("test").Table("users").Insert(struct{ prop string }{prop: "I am a string."}).RunWrite(client.Session)
-	require.NoError(t, err)
-	r.DB("test").Table("users").Insert(User{Username: "hi", CreatedAt: time.Now()}).RunWrite(client.Session)
-	log.Println("DID STUFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
-	t.Log("I DID THE USER STUFF AND DID NOT FAIL.")
+	r.DB("test").TableDrop("users").Exec(client.Session)
+	r.DB("test").TableCreate("users").Exec(client.Session)
 	return client
 }
