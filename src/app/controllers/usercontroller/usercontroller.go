@@ -1,4 +1,4 @@
-package controllers
+package usercontroller
 
 import (
 	"encoding/json"
@@ -6,15 +6,16 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/EaseApp/web-backend/src/app/controllers/helpers"
 	"github.com/EaseApp/web-backend/src/app/models"
 )
 
 var querier *models.UserQuerier
 
-// InitUserController sets the hacky global UserQuerier to the given querier.
+// Init sets the hacky global UserQuerier to the given querier.
 // This is to simplify the code because for this school project, we don't need
 // to have perfect dependency injection practices.
-func InitUserController(userQuerier *models.UserQuerier) {
+func Init(userQuerier *models.UserQuerier) {
 	querier = userQuerier
 }
 
@@ -32,7 +33,7 @@ func SignInHandler(w http.ResponseWriter, req *http.Request) {
 
 	user, err := querier.AttemptLogin(params.Username, params.Password)
 	if err != nil {
-		sendError(http.StatusUnauthorized, err, w)
+		helpers.SendError(http.StatusUnauthorized, err, w)
 		return
 	}
 
@@ -50,13 +51,13 @@ func SignUpHandler(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		friendlyErr := errors.New("Could not create user")
 		log.Println(friendlyErr.Error() + ".  Error: " + err.Error())
-		sendError(http.StatusInternalServerError, friendlyErr, w)
+		helpers.SendError(http.StatusInternalServerError, friendlyErr, w)
 		return
 	}
 
 	user, err = querier.Save(user)
 	if err != nil {
-		sendError(http.StatusBadRequest, err, w)
+		helpers.SendError(http.StatusBadRequest, err, w)
 		return
 	}
 	json.NewEncoder(w).Encode(user)
@@ -71,12 +72,12 @@ func parseUserParams(w http.ResponseWriter, req *http.Request) (userParams, erro
 	err := json.NewDecoder(req.Body).Decode(&params)
 	if err != nil {
 		friendlyErr := errors.New("Invalid User Params: " + err.Error())
-		sendError(http.StatusBadRequest, friendlyErr, w)
+		helpers.SendError(http.StatusBadRequest, friendlyErr, w)
 		return params, friendlyErr
 	}
 	if params.Password == "" || params.Username == "" {
 		friendlyErr := errors.New("Username or password cannot be blank")
-		sendError(http.StatusBadRequest, friendlyErr, w)
+		helpers.SendError(http.StatusBadRequest, friendlyErr, w)
 		return params, friendlyErr
 	}
 	return params, nil

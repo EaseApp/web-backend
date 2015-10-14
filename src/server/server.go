@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/EaseApp/web-backend/src/app/controllers"
+	"github.com/EaseApp/web-backend/src/app/controllers/usercontroller"
 	"github.com/EaseApp/web-backend/src/app/models"
 	"github.com/EaseApp/web-backend/src/db"
 	"github.com/gorilla/mux"
@@ -44,7 +44,7 @@ func createRoutingMux(client *db.Client) *mux.Router {
 	// Set up the queriers and controllers.
 	userQuerier := models.NewUserQuerier(client.Session)
 
-	controllers.InitUserController(userQuerier)
+	usercontroller.Init(userQuerier)
 
 	router := mux.NewRouter()
 
@@ -53,8 +53,8 @@ func createRoutingMux(client *db.Client) *mux.Router {
 	})
 
 	// User routes.
-	router.HandleFunc("/users/sign_up", controllers.SignUpHandler).Methods("POST")
-	router.HandleFunc("/users/sign_in", controllers.SignInHandler).Methods("POST")
+	router.HandleFunc("/users/sign_up", usercontroller.SignUpHandler).Methods("POST")
+	router.HandleFunc("/users/sign_in", usercontroller.SignInHandler).Methods("POST")
 
 	return router
 }

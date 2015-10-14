@@ -1,4 +1,4 @@
-package controllers
+package helpers
 
 import (
 	"encoding/json"
@@ -11,8 +11,8 @@ type errorResponse struct {
 	ErrMessage string `json:"error"`
 }
 
-// sendError sends and logs the given error.
-func sendError(errorCode int, err error, w http.ResponseWriter) {
+// SendError sends and logs the given error.
+func SendError(errorCode int, err error, w http.ResponseWriter) {
 	w.WriteHeader(errorCode)
 	log.Printf("Error: Returning status code %d with error message %s.\n", errorCode, err)
 	resp := errorResponse{ErrCode: errorCode, ErrMessage: err.Error()}
