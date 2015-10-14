@@ -17,7 +17,6 @@ type User struct {
 	Username     string    `gorethink:"username" json:"username"`
 	PasswordHash string    `gorethink:"password_hash" json:"-"`
 	APIToken     string    `gorethink:"api_token" json:"api_token"`
-	LoginToken   string    `gorethink:"login_token" json:"login_token"`
 	CreatedAt    time.Time `gorethink:"created_at" json:"created_at"`
 }
 
@@ -43,13 +42,6 @@ func NewUser(username, password string) (*User, error) {
 		return nil, err
 	}
 	user.APIToken = apiToken
-	loginToken, err := generateRandomString(30)
-	if err != nil {
-		log.Println("Error: Couldn't generate random login token.")
-		log.Println(err)
-		return nil, err
-	}
-	user.LoginToken = loginToken
 
 	byteHash, err :=
 		bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

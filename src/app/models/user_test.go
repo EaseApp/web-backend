@@ -17,7 +17,6 @@ func TestNewUser(t *testing.T) {
 	assert.NotEqual(t, "pass", user.PasswordHash)
 	assert.NotEmpty(t, user.PasswordHash)
 	assert.NotEmpty(t, user.APIToken)
-	assert.NotEmpty(t, user.LoginToken)
 	assert.WithinDuration(t, time.Now(), user.CreatedAt, time.Minute)
 }
 
@@ -66,7 +65,6 @@ func assertUsersEqual(t *testing.T, u1, u2 *User) {
 	assert.Equal(t, u1.Username, u2.Username)
 	assert.Equal(t, u1.PasswordHash, u2.PasswordHash)
 	assert.Equal(t, u1.APIToken, u2.APIToken)
-	assert.Equal(t, u1.LoginToken, u2.LoginToken)
 	assert.WithinDuration(t, u1.CreatedAt, u2.CreatedAt, time.Second)
 }
 
