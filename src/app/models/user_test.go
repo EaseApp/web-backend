@@ -79,7 +79,11 @@ func getDBClient(t *testing.T) *db.Client {
 	client, err := db.NewClient(localDBAddr)
 	require.NoError(t, err)
 
+	// Wait for the db to be ready.  Needed for Travis.
+	r.Wait().Exec(client.Session)
+
 	// Clear the user table for the tests.
 	r.DB("test").Table("users").Delete().Exec(client.Session)
+
 	return client
 }
