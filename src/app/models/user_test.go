@@ -81,10 +81,13 @@ func getDBClient(t *testing.T) *db.Client {
 	require.NoError(t, err)
 
 	// Clear the user table for the tests.
-	res, err := r.DB("test").Table("users").Status().Run(client.Session)
-	log.Println(res)
-	log.Println(err)
 	var response map[string]interface{}
+	res, err := r.Wait().Run(client.Session)
+	res.One(&response)
+	log.Println("WAIT RESPONSE:")
+	log.Println(response)
+	res, err = r.DB("test").Table("users").Status().Run(client.Session)
+	log.Println("TABLE STATUS RESPONSE:")
 	res.One(&response)
 	log.Println(response)
 	r.Wait(r.WaitOpts{WaitFor: "all_replicas_ready"}).Exec(client.Session)
