@@ -81,6 +81,9 @@ func getDBClient(t *testing.T) *db.Client {
 	require.NoError(t, err)
 
 	// Clear the user table for the tests.
+	res, err := r.DB("test").Table("users").Status().Run(client.Session)
+	log.Info(res)
+	log.Info(err)
 	r.Wait(r.WaitOpts{WaitFor: "all_replicas_ready"}).Exec(client.Session)
 	r.Wait(r.WaitOpts{WaitFor: "ready_for_writes"}).Exec(client.Session)
 	r.DB("test").Table("users").Delete().Exec(client.Session)
