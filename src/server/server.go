@@ -10,8 +10,36 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// CreateRoutingMux sets up the routing for the server.
-func CreateRoutingMux(client *db.Client) *mux.Router {
+// EaseServer serves while allowing cross origin access.
+type EaseServer struct {
+	r *mux.Router
+}
+
+// NewEaseServer creates a new handler for Ease.
+func NewEaseServer(client *db.Client) *EaseServer {
+	return &EaseServer{r: createRoutingMux(client)}
+}
+
+// ServeHTTP serves requests from the EaseServer's mux while allowing
+// cross origin access.
+func (s *EaseServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if origin := req.Header.Get("Origin"); origin != "" {
+		rw.Header().Set("Access-Control-Allow-Origin", origin)
+		rw.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		rw.Header().Set("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	}
+	// Stop here if its Preflighted OPTIONS request
+	if req.Method == "OPTIONS" {
+		return
+	}
+
+	// Lets Gorilla work
+	s.r.ServeHTTP(rw, req)
+}
+
+// createRoutingMux sets up the routing for the server.
+func createRoutingMux(client *db.Client) *mux.Router {
 
 	// Set up the queriers and controllers.
 	userQuerier := models.NewUserQuerier(client.Session)

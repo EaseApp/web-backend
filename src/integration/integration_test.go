@@ -148,7 +148,7 @@ func sendJSON(jsonInput, url, path, method string, t *testing.T) *http.Response 
 
 func setUpServer(t *testing.T) *httptest.Server {
 	client := getDBClient(t)
-	mux := server.CreateRoutingMux(client)
+	mux := server.NewEaseServer(client)
 	return httptest.NewServer(mux)
 }
 

@@ -19,7 +19,7 @@ func main() {
 	}
 	defer client.Close()
 
-	router := server.CreateRoutingMux(client)
+	router := server.NewEaseServer(client)
 
 	n := negroni.Classic()
 	n.UseHandler(router)
