@@ -81,7 +81,11 @@ func getDBClient(t *testing.T) *db.Client {
 	require.NoError(t, err)
 
 	// Clear the user table for the tests.
+	r.Wait(r.WaitOpts{WaitFor: "all_replicas_ready"}).Exec(client.Session)
+	r.Wait(r.WaitOpts{WaitFor: "ready_for_writes"}).Exec(client.Session)
 	r.DB("test").Table("users").Delete().Exec(client.Session)
+	r.Wait(r.WaitOpts{WaitFor: "ready_for_writes"}).Exec(client.Session)
+	r.Wait(r.WaitOpts{WaitFor: "all_replicas_ready"}).Exec(client.Session)
 	r.DB("test").Table("users").Insert(map[string]string{"hello": "world"}).RunWrite(client.Session)
 	_, err = r.DB("test").Table("users").Insert(struct{ prop string }{prop: "I am a string."}).RunWrite(client.Session)
 	require.NoError(t, err)
