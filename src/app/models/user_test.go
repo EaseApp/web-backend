@@ -84,6 +84,9 @@ func getDBClient(t *testing.T) *db.Client {
 	res, err := r.DB("test").Table("users").Status().Run(client.Session)
 	log.Println(res)
 	log.Println(err)
+	var response map[string]interface{}
+	res.One(&response)
+	log.Println(response)
 	r.Wait(r.WaitOpts{WaitFor: "all_replicas_ready"}).Exec(client.Session)
 	r.Wait(r.WaitOpts{WaitFor: "ready_for_writes"}).Exec(client.Session)
 	r.DB("test").Table("users").Delete().Exec(client.Session)
