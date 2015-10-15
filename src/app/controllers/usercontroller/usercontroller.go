@@ -63,6 +63,12 @@ func SignUpHandler(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
+// CreateApplicationHandler handles creating applications for the authenticated user.
+func CreateApplicationHandler(w http.ResponseWriter, req *http.Request, user *models.User) {
+	// TODO: Implement and integration test.
+	// TODO: UserQuerier.CreateApplication also needs tests. Not sure if it works.
+}
+
 // parseUserParams parses user params and returns an error to the user
 // if they are invalid.
 // Returns the params if successful.
