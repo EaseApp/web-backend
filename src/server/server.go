@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/EaseApp/web-backend/src/app/controllers/helpers"
 	"github.com/EaseApp/web-backend/src/app/controllers/usercontroller"
 	"github.com/EaseApp/web-backend/src/app/models"
 	"github.com/EaseApp/web-backend/src/db"
@@ -55,6 +56,8 @@ func createRoutingMux(client *db.Client) *mux.Router {
 	// User routes.
 	router.HandleFunc("/users/sign_up", usercontroller.SignUpHandler).Methods("POST")
 	router.HandleFunc("/users/sign_in", usercontroller.SignInHandler).Methods("POST")
+	router.HandleFunc("/users/applications",
+		helpers.RequireAPIToken(usercontroller.CreateApplicationHandler)).Methods("POST")
 
 	return router
 }
