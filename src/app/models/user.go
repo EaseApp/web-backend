@@ -142,12 +142,13 @@ func (querier *UserQuerier) CreateApplication(user *User, appName string) (*Appl
 	}
 
 	// Create a table for the new application.
-	_, err := r.DB("test").TableCreate(getTableName(user.Username, appName)).RunWrite(session)
+	_, err = r.DB("test").TableCreate(getTableName(user.Username, appName)).
+		RunWrite(querier.session)
 	if err != nil {
 		return nil, err
 	}
 
-	user.Applications = append(user.Applications, app)
+	user.Applications = append(user.Applications, *app)
 	user, err = querier.Save(user)
 	if err != nil {
 		return nil, err
@@ -156,8 +157,8 @@ func (querier *UserQuerier) CreateApplication(user *User, appName string) (*Appl
 }
 
 // getTableName returns the name of the table for the given user's application.
-func getTableName(user, application string) string {
-	return fmt.Sprintf("%v_%v", client, application)
+func getTableName(username, appName string) string {
+	return fmt.Sprintf("%v_%v", username, appName)
 }
 
 // Possible token chars.
