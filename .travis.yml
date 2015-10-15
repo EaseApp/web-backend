@@ -15,8 +15,7 @@ before_script:
 - rethinkdb &
 
 before_install:
-- openssl aes-256-cbc -K $encrypted_cab47c9f148d_key -iv $encrypted_cab47c9f148d_iv
-- in deploy_key.pem.enc -out .travis/deploy_key.pem -d
+- openssl aes-256-cbc -K $encrypted_cab47c9f148d_key -iv $encrypted_cab47c9f148d_iv -in deploy_key.pem.enc -out .travis/deploy_key.pem -d
 
 after_success:
 - eval "$(ssh-agent -s)" #start the ssh agent
