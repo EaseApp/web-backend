@@ -5,7 +5,6 @@ branches:
   only:
   - master
   - deployment
-
 before_script:
 - sudo add-apt-repository ppa:rethinkdb/ppa -y
 - source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME
@@ -14,9 +13,10 @@ before_script:
 - sudo apt-get update;
 - sudo apt-get -y install rethinkdb;
 - rethinkdb &
-
-
 after_success:
 - echo "lets do this"
 - go build
 - curl --ftp-create-dirs -T bin/main -u $FTP_USER:$FTP_PASSWORD ftp://ease-62q56ueo.cloudapp.net
+before_install:
+- openssl aes-256-cbc -K $encrypted_cab47c9f148d_key -iv $encrypted_cab47c9f148d_iv
+  -in deploy_key.pem.enc -out .travis/deploy_key.pem -d
