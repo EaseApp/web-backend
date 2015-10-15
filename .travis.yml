@@ -6,6 +6,7 @@ branches:
   - master
   - deployment
 before_script:
+- echo -e "Host ease-62q56ueo.cloudapp.net\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 - sudo add-apt-repository ppa:rethinkdb/ppa -y
 - source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME
   main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list;
