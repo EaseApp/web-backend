@@ -32,7 +32,7 @@ build: dependencies
 $(GOPATH)/bin/gin:
 	@go get github.com/codegangsta/gin
 
-dev-server: $(GOPATH)/bin/gin
+dev-server: dependencies $(GOPATH)/bin/gin
 	@echo "Starting dev server..."
 	@$(GOPATH)/bin/gin
 
