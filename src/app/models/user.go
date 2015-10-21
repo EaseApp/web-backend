@@ -76,7 +76,7 @@ func NewUser(username, password string) (*User, error) {
 // FindUserByAPIToken finds a user by an API token.
 func (querier *UserQuerier) FindUserByAPIToken(token string) *User {
 	res, err := r.Table("users").Filter(map[string]string{
-		"APIToken": token,
+		"api_token": token,
 	}).Run(querier.session)
 	if err != nil || res.IsNil() {
 		return nil

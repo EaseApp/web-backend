@@ -70,14 +70,15 @@ func CreateApplicationHandler(w http.ResponseWriter, req *http.Request, user *mo
 	// TODO: UserQuerier.CreateApplication also needs tests. Not sure if it works.
 	vars := mux.Vars(req)
 	application := vars["application"]
-	_, err := querier.CreateApplication(user, application)
+	newApp, err := querier.CreateApplication(user, application)
 
 	if err != nil {
 		friendlyErr := errors.New("Could not create application")
+		log.Println(err)
 		helpers.SendError(http.StatusInternalServerError, friendlyErr, w)
 		return
 	}
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(newApp)
 }
 
 // parseUserParams parses user params and returns an error to the user

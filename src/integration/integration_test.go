@@ -22,7 +22,7 @@ type errorResp struct {
 }
 
 func TestSignUp(t *testing.T) {
-	server := setUpServer(t)
+	server, _ := setUpServer(t)
 	defer server.Close()
 
 	testcases := []struct {
@@ -70,7 +70,7 @@ func TestSignUp(t *testing.T) {
 }
 
 func TestCreateApplication(t *testing.T) {
-	server := setUpServer(t)
+	server, client := setUpServer(t)
 	defer server.Close()
 
 	apiToken := createTestUser(server.URL, t)
@@ -115,10 +115,12 @@ func TestCreateApplication(t *testing.T) {
 		}
 	}
 
+	// Delete the created application table.
+	r.DB("test").TableDrop("ronswanson_bestappevar").RunWrite(client.Session)
 }
 
 func TestSignIn(t *testing.T) {
-	server := setUpServer(t)
+	server, _ := setUpServer(t)
 	defer server.Close()
 
 	userAPIToken := createTestUser(server.URL, t)
@@ -205,10 +207,10 @@ func sendJSON(jsonInput, token, url, path, method string, t *testing.T) *http.Re
 	return resp
 }
 
-func setUpServer(t *testing.T) *httptest.Server {
+func setUpServer(t *testing.T) (*httptest.Server, *db.Client) {
 	client := getDBClient(t)
 	mux := server.NewEaseServer(client)
-	return httptest.NewServer(mux)
+	return httptest.NewServer(mux), client
 }
 
 func getDBClient(t *testing.T) *db.Client {
