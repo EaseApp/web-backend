@@ -86,7 +86,7 @@ func TestCreateApplication(t *testing.T) {
 			token:         "badtoken",
 			appName:       "lol",
 			expectedCode:  http.StatusUnauthorized,
-			expectedError: "Not authorized",
+			expectedError: "Authorization token does not match.",
 		},
 		// Valid token and created app.
 		{
