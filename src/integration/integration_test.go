@@ -69,6 +69,54 @@ func TestSignUp(t *testing.T) {
 	}
 }
 
+func TestCreateApplication(t *testing.T) {
+	server := setUpServer(t)
+	defer server.Close()
+
+	apiToken := createTestUser(server.URL, t)
+
+	testcases := []struct {
+		token         string
+		appName       string
+		expectedCode  int
+		expectedError string
+	}{
+		// Invalid token.
+		{
+			token:         "badtoken",
+			appName:       "lol",
+			expectedCode:  http.StatusUnauthorized,
+			expectedError: "Not authorized",
+		},
+		// Valid token and created app.
+		{
+			token:         apiToken,
+			appName:       "bestappevar",
+			expectedCode:  http.StatusOK,
+			expectedError: "",
+		},
+	}
+
+	for _, testcase := range testcases {
+		resp := sendJSON("", testcase.token, server.URL, "/users/applications/"+testcase.appName, "POST", t)
+
+		assert.Equal(t, testcase.expectedCode, resp.StatusCode)
+
+		// Error expected.
+		if testcase.expectedError != "" {
+			var errStruct errorResp
+			json.NewDecoder(resp.Body).Decode(&errStruct)
+			assert.Equal(t, testcase.expectedError, errStruct.Err)
+		} else { // No error expected.
+			var app models.Application
+			json.NewDecoder(resp.Body).Decode(&app)
+			assert.Equal(t, testcase.appName, app.Name)
+			assert.NotEmpty(t, app.AppToken)
+		}
+	}
+
+}
+
 func TestSignIn(t *testing.T) {
 	server := setUpServer(t)
 	defer server.Close()
