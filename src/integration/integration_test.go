@@ -52,16 +52,16 @@ func TestSignUp(t *testing.T) {
 	}
 
 	for _, testcase := range testcases {
-		resp := sendJSON(testcase.input, server.URL, "/users/sign_up", "POST", t)
+		resp := sendJSON(testcase.input, "", server.URL, "/users/sign_up", "POST", t)
 
 		assert.Equal(t, testcase.expectedCode, resp.StatusCode)
 
-		// No error expected.
-		if testcase.expectedError == "" {
+		// Error expected.
+		if testcase.expectedError != "" {
 			var errStruct errorResp
 			json.NewDecoder(resp.Body).Decode(&errStruct)
 			assert.Equal(t, testcase.expectedError, errStruct.Err)
-		} else { // Error expected.
+		} else { // No error expected.
 			var userStruct models.User
 			json.NewDecoder(resp.Body).Decode(&userStruct)
 			assert.Equal(t, testcase.expectedUsername, userStruct.Username)
@@ -69,18 +69,59 @@ func TestSignUp(t *testing.T) {
 	}
 }
 
+func TestCreateApplication(t *testing.T) {
+	server := setUpServer(t)
+	defer server.Close()
+
+	apiToken := createTestUser(server.URL, t)
+
+	testcases := []struct {
+		token         string
+		appName       string
+		expectedCode  int
+		expectedError string
+	}{
+		// Invalid token.
+		{
+			token:         "badtoken",
+			appName:       "lol",
+			expectedCode:  http.StatusUnauthorized,
+			expectedError: "Not authorized",
+		},
+		// Valid token and created app.
+		{
+			token:         apiToken,
+			appName:       "bestappevar",
+			expectedCode:  http.StatusOK,
+			expectedError: "",
+		},
+	}
+
+	for _, testcase := range testcases {
+		resp := sendJSON("", testcase.token, server.URL, "/users/applications/"+testcase.appName, "POST", t)
+
+		assert.Equal(t, testcase.expectedCode, resp.StatusCode)
+
+		// Error expected.
+		if testcase.expectedError != "" {
+			var errStruct errorResp
+			json.NewDecoder(resp.Body).Decode(&errStruct)
+			assert.Equal(t, testcase.expectedError, errStruct.Err)
+		} else { // No error expected.
+			var app models.Application
+			json.NewDecoder(resp.Body).Decode(&app)
+			assert.Equal(t, testcase.appName, app.Name)
+			assert.NotEmpty(t, app.AppToken)
+		}
+	}
+
+}
+
 func TestSignIn(t *testing.T) {
 	server := setUpServer(t)
 	defer server.Close()
 
-	// Create a test user for signing in with.
-	resp := sendJSON(`{"username":"ronswanson","password":"meat"}`,
-		server.URL, "/users/sign_up", "POST", t)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-	var testUser models.User
-	err := json.NewDecoder(resp.Body).Decode(&testUser)
-	require.NoError(t, err)
-	userAPIToken := testUser.APIToken
+	userAPIToken := createTestUser(server.URL, t)
 
 	testcases := []struct {
 		input            string
@@ -89,13 +130,15 @@ func TestSignIn(t *testing.T) {
 		expectedUsername string
 		expectedAPIToken string
 	}{
+		// Valid login.
 		{
 			input:            `{"username": "ronswanson", "password": "meat"}`,
 			expectedCode:     http.StatusOK,
 			expectedError:    "",
-			expectedUsername: "user",
+			expectedUsername: "ronswanson",
 			expectedAPIToken: userAPIToken,
 		},
+		// Invalid username.
 		{
 			input:            `{"username": "anneperkins", "password": "pass"}`,
 			expectedCode:     http.StatusUnauthorized,
@@ -103,8 +146,9 @@ func TestSignIn(t *testing.T) {
 			expectedUsername: "",
 			expectedAPIToken: "",
 		},
+		// Invalid password.
 		{
-			input:            `{"username": "anneperkins", "password": "pass"}`,
+			input:            `{"username": "ronswanson", "password": "pass"}`,
 			expectedCode:     http.StatusUnauthorized,
 			expectedError:    "Password was invalid",
 			expectedUsername: "",
@@ -113,16 +157,16 @@ func TestSignIn(t *testing.T) {
 	}
 
 	for _, testcase := range testcases {
-		resp := sendJSON(testcase.input, server.URL, "/users/sign_in", "POST", t)
+		resp := sendJSON(testcase.input, "", server.URL, "/users/sign_in", "POST", t)
 
 		assert.Equal(t, testcase.expectedCode, resp.StatusCode)
 
-		// No error expected.
-		if testcase.expectedError == "" {
+		// Error expected.
+		if testcase.expectedError != "" {
 			var errStruct errorResp
 			json.NewDecoder(resp.Body).Decode(&errStruct)
 			assert.Equal(t, testcase.expectedError, errStruct.Err)
-		} else { // Error expected.
+		} else { // No error expected.
 			var userStruct models.User
 			json.NewDecoder(resp.Body).Decode(&userStruct)
 			assert.Equal(t, testcase.expectedUsername, userStruct.Username)
@@ -132,10 +176,25 @@ func TestSignIn(t *testing.T) {
 
 }
 
-func sendJSON(jsonInput, url, path, method string, t *testing.T) *http.Response {
+var testUserUsername = "ronswanson"
+var testUserPass = "meat"
+
+// createTestUser creates a test user and returns its api token.
+func createTestUser(url string, t *testing.T) string {
+	resp := sendJSON(`{"username":"ronswanson","password":"meat"}`,
+		"", url, "/users/sign_up", "POST", t)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	var user models.User
+	err := json.NewDecoder(resp.Body).Decode(&user)
+	require.NoError(t, err)
+	return user.APIToken
+}
+
+func sendJSON(jsonInput, token, url, path, method string, t *testing.T) *http.Response {
 	var jsonStr = []byte(jsonInput)
 	req, err := http.NewRequest(method, url+path, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
