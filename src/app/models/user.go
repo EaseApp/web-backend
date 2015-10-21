@@ -142,8 +142,7 @@ func (querier *UserQuerier) CreateApplication(user *User, appName string) (*Appl
 	}
 
 	// Create a table for the new application.
-	_, err = r.DB("test").TableCreate(getTableName(user.Username, appName)).
-		RunWrite(querier.session)
+	_, err = r.DB("test").TableCreate(getTableName(user.Username, appName)).RunWrite(querier.session)
 	if err != nil {
 		return nil, err
 	}
