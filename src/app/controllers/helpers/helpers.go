@@ -2,15 +2,22 @@ package helpers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
 	"github.com/EaseApp/web-backend/src/app/models"
 )
 
+var querier *models.UserQuerier
+
 type errorResponse struct {
 	ErrCode    int    `json:"error_code"`
 	ErrMessage string `json:"error"`
+}
+
+func Init(q *models.UserQuerier) {
+	querier = q
 }
 
 // SendError sends and logs the given error.
@@ -32,6 +39,19 @@ func RequireAPIToken(
 		// SendError(http.StatusUnAuthorized, errors.New("Invalid API token.", w)
 		// If one is found, call handler like the below code:
 		var user *models.User
-		handler(w, req, user)
+		auth := req.Header.Get("Authorization")
+		if auth == "" {
+			friendlyErr := errors.New("No Authorization token provided.")
+			SendError(http.StatusUnauthorized, friendlyErr, w)
+			return
+		} else {
+			user = querier.FindUserByAPIToken(auth)
+			if user == nil {
+				friendlyErr := errors.New("Authorization token does not match.")
+				SendError(http.StatusUnauthorized, friendlyErr, w)
+				return
+			}
+			handler(w, req, user)
+		}
 	}
 }

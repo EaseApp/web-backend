@@ -73,6 +73,22 @@ func NewUser(username, password string) (*User, error) {
 	return user, nil
 }
 
+// FindUserByAPIToken finds a user by an API token.
+func (querier *UserQuerier) FindUserByAPIToken(token string) *User {
+	res, err := r.Table("users").Filter(map[string]string{
+		"APIToken": token,
+	}).Run(querier.session)
+	if err != nil || res.IsNil() {
+		return nil
+	}
+	var user *User
+	err = res.One(&user)
+	if err != nil {
+		return nil
+	}
+	return user
+}
+
 // Save saves the given user and returns it.
 // It verifies that the given username isn't already taken.
 // Returns the updated user.

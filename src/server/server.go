@@ -46,6 +46,7 @@ func createRoutingMux(client *db.Client) *mux.Router {
 	userQuerier := models.NewUserQuerier(client.Session)
 
 	usercontroller.Init(userQuerier)
+	helpers.Init(userQuerier)
 
 	router := mux.NewRouter()
 
