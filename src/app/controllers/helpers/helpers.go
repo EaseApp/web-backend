@@ -16,6 +16,7 @@ type errorResponse struct {
 	ErrMessage string `json:"error"`
 }
 
+// Init sets up the helpers global UserQuerier.
 func Init(q *models.UserQuerier) {
 	querier = q
 }
@@ -44,14 +45,14 @@ func RequireAPIToken(
 			friendlyErr := errors.New("No Authorization token provided.")
 			SendError(http.StatusUnauthorized, friendlyErr, w)
 			return
-		} else {
-			user = querier.FindUserByAPIToken(auth)
-			if user == nil {
-				friendlyErr := errors.New("Authorization token does not match.")
-				SendError(http.StatusUnauthorized, friendlyErr, w)
-				return
-			}
-			handler(w, req, user)
 		}
+
+		user = querier.FindUserByAPIToken(auth)
+		if user == nil {
+			friendlyErr := errors.New("Authorization token does not match.")
+			SendError(http.StatusUnauthorized, friendlyErr, w)
+			return
+		}
+		handler(w, req, user)
 	}
 }
