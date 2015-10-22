@@ -59,6 +59,8 @@ func createRoutingMux(client *db.Client) *mux.Router {
 	router.HandleFunc("/users/sign_in", usercontroller.SignInHandler).Methods("POST")
 	router.HandleFunc("/users/applications/{application}",
 		helpers.RequireAPIToken(usercontroller.CreateApplicationHandler)).Methods("POST")
+	router.HandleFunc("/users/applications",
+		helpers.RequireAPIToken(usercontroller.ListApplicationsHandler)).Methods("GET")
 
 	return router
 }

@@ -41,7 +41,7 @@ func RequireAPIToken(
 			return
 		}
 
-		user: = querier.FindUserByAPIToken(auth)
+		user := querier.FindUserByAPIToken(auth)
 		if user == nil {
 			friendlyErr := errors.New("Authorization token does not match.")
 			SendError(http.StatusUnauthorized, friendlyErr, w)

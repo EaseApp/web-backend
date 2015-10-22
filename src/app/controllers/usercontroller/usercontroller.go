@@ -81,7 +81,7 @@ func CreateApplicationHandler(w http.ResponseWriter, req *http.Request, user *mo
 
 // ListApplicationsHandler handles listing the applications for the authenticated user.
 func ListApplicationsHandler(w http.ResponseWriter, req *http.Request, user *models.User) {
-	json.NewEncoder.Encode(user.Applications)
+	json.NewEncoder(w).Encode(user.Applications)
 }
 
 // parseUserParams parses user params and returns an error to the user
