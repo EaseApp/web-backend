@@ -34,12 +34,6 @@ func SendError(errorCode int, err error, w http.ResponseWriter) {
 func RequireAPIToken(
 	handler func(http.ResponseWriter, *http.Request, *models.User)) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		// TODO: implement this.
-		// Make a new UserQuerier function to find a user by API token.
-		// If one isn't found, do:
-		// SendError(http.StatusUnAuthorized, errors.New("Invalid API token.", w)
-		// If one is found, call handler like the below code:
-		var user *models.User
 		auth := req.Header.Get("Authorization")
 		if auth == "" {
 			friendlyErr := errors.New("No Authorization token provided.")
@@ -47,7 +41,7 @@ func RequireAPIToken(
 			return
 		}
 
-		user = querier.FindUserByAPIToken(auth)
+		user: = querier.FindUserByAPIToken(auth)
 		if user == nil {
 			friendlyErr := errors.New("Authorization token does not match.")
 			SendError(http.StatusUnauthorized, friendlyErr, w)
