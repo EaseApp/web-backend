@@ -66,8 +66,6 @@ func SignUpHandler(w http.ResponseWriter, req *http.Request) {
 
 // CreateApplicationHandler handles creating applications for the authenticated user.
 func CreateApplicationHandler(w http.ResponseWriter, req *http.Request, user *models.User) {
-	// TODO: Implement and integration test.
-	// TODO: UserQuerier.CreateApplication also needs tests. Not sure if it works.
 	vars := mux.Vars(req)
 	application := vars["application"]
 	newApp, err := querier.CreateApplication(user, application)
@@ -79,6 +77,11 @@ func CreateApplicationHandler(w http.ResponseWriter, req *http.Request, user *mo
 		return
 	}
 	json.NewEncoder(w).Encode(newApp)
+}
+
+// ListApplicationsHandler handles listing the applications for the authenticated user.
+func ListApplicationsHandler(w http.ResponseWriter, req *http.Request, user *models.User) {
+	json.NewEncoder(w).Encode(user.Applications)
 }
 
 // parseUserParams parses user params and returns an error to the user
