@@ -32,13 +32,13 @@ func TestSignUp(t *testing.T) {
 		expectedUsername string
 	}{
 		{
-			input:            `{"username": "user", "password": "pass"}`,
+			input:            `{"username": "theuser", "password": "pass"}`,
 			expectedCode:     http.StatusOK,
 			expectedError:    "",
-			expectedUsername: "user",
+			expectedUsername: "theuser",
 		},
 		{
-			input:            `{"username": "user", "password": "pass"}`,
+			input:            `{"username": "theuser", "password": "pass"}`,
 			expectedCode:     http.StatusBadRequest,
 			expectedError:    "A user with that name already exists",
 			expectedUsername: "",
@@ -67,6 +67,65 @@ func TestSignUp(t *testing.T) {
 			assert.Equal(t, testcase.expectedUsername, userStruct.Username)
 		}
 	}
+}
+
+func TestListApplications(t *testing.T) {
+	server, client := setUpServer(t)
+	defer server.Close()
+
+	apiToken := createTestUser(server.URL, t)
+
+	// Create two applications.
+	resp := sendJSON("", apiToken, server.URL, "/users/applications/bestappevar", "POST", t)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	resp = sendJSON("", apiToken, server.URL, "/users/applications/lol", "POST", t)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	testcases := []struct {
+		token         string
+		appNames      []string
+		expectedCode  int
+		expectedError string
+	}{
+		// Invalid token.
+		{
+			token:         "badtoken",
+			appNames:      nil,
+			expectedCode:  http.StatusUnauthorized,
+			expectedError: "Authorization token does not match.",
+		},
+		// Valid token and two apps returned.
+		{
+			token:         apiToken,
+			appNames:      []string{"bestappevar", "lol"},
+			expectedCode:  http.StatusOK,
+			expectedError: "",
+		},
+	}
+
+	for _, testcase := range testcases {
+		resp := sendJSON("", testcase.token, server.URL, "/users/applications", "GET", t)
+
+		assert.Equal(t, testcase.expectedCode, resp.StatusCode)
+
+		// Error expected.
+		if testcase.expectedError != "" {
+			var errStruct errorResp
+			json.NewDecoder(resp.Body).Decode(&errStruct)
+			assert.Equal(t, testcase.expectedError, errStruct.Err)
+		} else { // No error expected.
+			var apps []models.Application
+			json.NewDecoder(resp.Body).Decode(&apps)
+			for i, app := range apps {
+				assert.Equal(t, testcase.appNames[i], app.Name)
+				assert.NotEmpty(t, app.AppToken)
+			}
+		}
+	}
+
+	// Delete the created application table.
+	r.DB("test").TableDrop("ronswanson_bestappevar").RunWrite(client.Session)
+	r.DB("test").TableDrop("ronswanson_lol").RunWrite(client.Session)
 }
 
 func TestCreateApplication(t *testing.T) {
