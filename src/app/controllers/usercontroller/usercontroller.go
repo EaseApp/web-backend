@@ -8,6 +8,7 @@ import (
 
 	"github.com/EaseApp/web-backend/src/app/controllers/helpers"
 	"github.com/EaseApp/web-backend/src/app/models"
+	"github.com/gorilla/mux"
 )
 
 var querier *models.UserQuerier
@@ -61,6 +62,23 @@ func SignUpHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(user)
+}
+
+// CreateApplicationHandler handles creating applications for the authenticated user.
+func CreateApplicationHandler(w http.ResponseWriter, req *http.Request, user *models.User) {
+	// TODO: Implement and integration test.
+	// TODO: UserQuerier.CreateApplication also needs tests. Not sure if it works.
+	vars := mux.Vars(req)
+	application := vars["application"]
+	newApp, err := querier.CreateApplication(user, application)
+
+	if err != nil {
+		friendlyErr := errors.New("Could not create application")
+		log.Println(err)
+		helpers.SendError(http.StatusInternalServerError, friendlyErr, w)
+		return
+	}
+	json.NewEncoder(w).Encode(newApp)
 }
 
 // parseUserParams parses user params and returns an error to the user
