@@ -1,18 +1,26 @@
 language: go
-
 go:
-  - 1.5
-
+- 1.5
 branches:
   only:
-    - master
-    - deployment
-
+  - master
+  - deployment
 before_script:
-  #  Install and run RethinkDB
-  - sudo add-apt-repository ppa:rethinkdb/ppa -y
-  - source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list;
-  - wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -;
-  - sudo apt-get update;
-  - sudo apt-get -y install rethinkdb;
-  - rethinkdb &
+- echo -e "Host ease-62q56ueo.cloudapp.net\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+- sudo add-apt-repository ppa:rethinkdb/ppa -y
+- source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME
+  main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list;
+- wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -;
+- sudo apt-get update;
+- sudo apt-get -y install rethinkdb;
+- rethinkdb &
+
+before_install:
+- openssl aes-256-cbc -K $encrypted_cab47c9f148d_key -iv $encrypted_cab47c9f148d_iv -in deploy_key.pem.enc -out .travis/deploy_key.pem -d
+
+after_success:
+- eval "$(ssh-agent -s)" #start the ssh agent
+- chmod 600 .travis/deploy_key.pem # this key should have push access
+- ssh-add .travis/deploy_key.pem
+- git remote add deploy felttrip@ease-62q56ueo.cloudapp.net:/home/felttrip/git/web-backend
+- git push deploy
