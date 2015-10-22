@@ -19,9 +19,10 @@ func NewClient(addr string) (*Client, error) {
 
 	// TODO: Make this function take in a default database and set it here.
 	session, err := r.Connect(r.ConnectOpts{
-		Address: addr,
-		MaxIdle: 10,
-		MaxOpen: 10,
+		Address:  addr,
+		MaxIdle:  10,
+		MaxOpen:  10,
+		Database: "test",
 	})
 	if err != nil {
 		log.Println("Error connecting to RethinkdB:")
