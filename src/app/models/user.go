@@ -171,6 +171,33 @@ func (querier *UserQuerier) CreateApplication(user *User, appName string) (*Appl
 	return app, nil
 }
 
+// DeleteApplication handles deleting an application and dropping its table.
+func (querier *UserQuerier) DeleteApplication(user *User, appName string) (*User, error) {
+
+	// Search for the app to delete.
+	var newApps []Application
+	for i, app := range user.Applications {
+		if app.Name == appName {
+			newApps = append(user.Applications[:i], user.Applications[i+1:]...)
+		}
+	}
+
+	// If an app with that name does not exist.
+	if newApps == nil {
+		return nil, errors.New("Could not find application with that name")
+	}
+
+	// Drop the app's table.
+	_, err := r.DB("test").TableDrop(getTableName(user.Username, appName)).RunWrite(querier.session)
+	if err != nil {
+		return nil, err
+	}
+
+	// Resave the user with the updated application list.
+	user.Applications = newApps
+	return querier.Save(user)
+}
+
 // getTableName returns the name of the table for the given user's application.
 func getTableName(username, appName string) string {
 	return fmt.Sprintf("%v_%v", username, appName)
