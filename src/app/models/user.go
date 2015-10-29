@@ -27,12 +27,6 @@ type UserQuerier struct {
 	session *r.Session
 }
 
-// Application holds attributes for an Ease user's applications.
-type Application struct {
-	Name     string `gorethink:"name" json:"name"`
-	AppToken string `gorethink:"app_token" json:"app_token"`
-}
-
 // newApplication creates a new application with a token and the given name.
 func newApplication(appName string) (*Application, error) {
 	appToken, err := generateRandomString(30)
