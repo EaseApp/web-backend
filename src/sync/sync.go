@@ -45,8 +45,8 @@ func (s *SyncServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 func createRouting() *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/pub", pubHandler)
 	router.HandleFunc("/sub", subHandler)
+	router.HandleFunc("/pub/{application}", pubHandler)
 	return router
 }
 
@@ -90,11 +90,13 @@ func subHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func publish(application string, data []byte) {
-	for _, element := range applications[application] {
-		log.Println("Writing to " + application)
-		err := element.Conn.WriteMessage(1, data)
-		if err != nil {
-			log.Println(err)
+	log.Println("Sync is publishing to: " + application)
+	if len(applications[application]) > 0 {
+		for _, element := range applications[application] {
+			err := element.Conn.WriteMessage(1, data)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 	}
 }
@@ -109,10 +111,15 @@ func decodeData(req *http.Request) ([]byte, error) {
 
 // pubHandler triggers a publishing event
 func pubHandler(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	application := vars["application"]
+
 	data, err := decodeData(req)
 	if err != nil {
 		log.Println(err)
 	}
-	publish("test", data)
+
+	publish(application, data)
 	fmt.Fprintf(w, "You just published!")
+
 }

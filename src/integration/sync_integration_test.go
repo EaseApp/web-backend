@@ -9,35 +9,59 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestSocketConnection(t *testing.T) {
 	server := setUpSyncServer(t)
 
 	testcases := []struct {
-		connectionDb string
+		subscribeTo  string
+		publishTo    string
 		publishData  string
+		expectedData string
+		conn         *websocket.Conn
 	}{
 		{
-			connectionDb: "test",
+			// Subscribt to an application, get the relavent data
+			subscribeTo:  "test",
+			publishTo:    "test",
 			publishData:  `{"data":"test"}`,
+			expectedData: `{"data":"test"}`,
+		},
+		{
+			// Subscribe to one application, make sure you don't get another app's data
+			subscribeTo:  "anApp",
+			publishTo:    "differentApp",
+			publishData:  `{"data":"test"}`,
+			expectedData: "",
 		},
 	}
 
 	for _, testcase := range testcases {
 		port := strings.Split(server.URL, ":")[2]
-		conn := openConnection("ws://localhost:" + port + "/sub")
-		defer conn.Close()
+		testcase.conn = openConnection("ws://localhost:" + port + "/sub")
+		defer testcase.conn.Close()
 
-		sendSocketData(conn, testcase.connectionDb)
-		assert.Equal(t, testcase.connectionDb, grabSocketData(conn))
+		sendSocketData(testcase.conn, testcase.subscribeTo)
+		assert.Equal(t, testcase.subscribeTo, grabSocketData(testcase.conn))
+
+		resp := sendJSON(testcase.publishData, "", server.URL, "/pub/"+testcase.publishTo, "POST", t)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		actual := grabSocketData(testcase.conn)
+		assert.Equal(t, testcase.expectedData, actual)
 	}
 	defer server.Close()
 }
 
 func grabSocketData(conn *websocket.Conn) string {
-	_, p, _ := conn.ReadMessage()
+	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+	_, p, err := conn.ReadMessage() // This methods blocks. Make sure to set Deadline
+	if err != nil {
+		log.Println(err)
+	}
 	return string(p)
+
 }
 
 func sendSocketData(conn *websocket.Conn, data string) error {
@@ -51,16 +75,15 @@ func openConnection(url string) *websocket.Conn {
 	}
 
 	header := make(http.Header)
-	conn, resp, err := DefaultDialer.Dial(url, header)
+	conn, _, err := DefaultDialer.Dial(url, header)
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println("Resp: ", resp)
 	return conn
 }
 
 func setUpSyncServer(t *testing.T) *httptest.Server {
 	mux := sync.NewSyncServer()
-	log.Println("Sync server running")
+	log.Println("Sync server running...")
 	return httptest.NewServer(mux)
 }
