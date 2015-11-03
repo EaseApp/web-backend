@@ -29,19 +29,25 @@ type UserQuerier struct {
 
 // Application holds attributes for an Ease user's applications.
 type Application struct {
-	Name     string `gorethink:"name" json:"name"`
-	AppToken string `gorethink:"app_token" json:"app_token"`
+	Name      string `gorethink:"name" json:"name"`
+	AppToken  string `gorethink:"app_token" json:"app_token"`
+	TableName string `gorethink:"table_name" json:"-"`
 }
 
 // newApplication creates a new application with a token and the given name.
-func newApplication(appName string) (*Application, error) {
+func newApplication(user *User, appName string) (*Application, error) {
 	appToken, err := generateRandomString(30)
 	if err != nil {
 		log.Println("Error: Couldn't generate random API token.")
 		log.Println(err)
 		return nil, err
 	}
-	return &Application{Name: appName, AppToken: appToken}, nil
+	tableName := fmt.Sprintf("%v_%v", user.Username, appName)
+	return &Application{
+		Name:      appName,
+		AppToken:  appToken,
+		TableName: tableName,
+	}, nil
 }
 
 // NewUserQuerier returns a new UserQuerier.
@@ -152,13 +158,13 @@ func (querier *UserQuerier) AttemptLogin(username, password string) (*User, erro
 
 // CreateApplication creates a new application on the given user.
 func (querier *UserQuerier) CreateApplication(user *User, appName string) (*Application, error) {
-	app, err := newApplication(appName)
+	app, err := newApplication(user, appName)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create a table for the new application.
-	_, err = r.DB("test").TableCreate(getTableName(user.Username, appName)).RunWrite(querier.session)
+	_, err = r.DB("test").TableCreate(app.TableName).RunWrite(querier.session)
 	if err != nil {
 		return nil, err
 	}
@@ -175,10 +181,12 @@ func (querier *UserQuerier) CreateApplication(user *User, appName string) (*Appl
 func (querier *UserQuerier) DeleteApplication(user *User, appName string) (*User, error) {
 
 	// Search for the app to delete.
+	var appToDelete Application
 	var newApps []Application
 	for i, app := range user.Applications {
 		if app.Name == appName {
 			newApps = append(user.Applications[:i], user.Applications[i+1:]...)
+			appToDelete = app
 		}
 	}
 
@@ -188,7 +196,7 @@ func (querier *UserQuerier) DeleteApplication(user *User, appName string) (*User
 	}
 
 	// Drop the app's table.
-	_, err := r.DB("test").TableDrop(getTableName(user.Username, appName)).RunWrite(querier.session)
+	_, err := r.DB("test").TableDrop(appToDelete.TableName).RunWrite(querier.session)
 	if err != nil {
 		return nil, err
 	}
@@ -196,11 +204,6 @@ func (querier *UserQuerier) DeleteApplication(user *User, appName string) (*User
 	// Resave the user with the updated application list.
 	user.Applications = newApps
 	return querier.Save(user)
-}
-
-// getTableName returns the name of the table for the given user's application.
-func getTableName(username, appName string) string {
-	return fmt.Sprintf("%v_%v", username, appName)
 }
 
 // Possible token chars.
