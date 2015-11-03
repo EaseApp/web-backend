@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/EaseApp/web-backend/src/app/models"
+	"github.com/gorilla/mux"
 )
 
 var querier *models.UserQuerier
@@ -48,5 +49,16 @@ func RequireAPIToken(
 			return
 		}
 		handler(w, req, user)
+	}
+}
+
+// RequireAppToken requires that the given route has a valid AppToken.
+// It requires that the route contains `username` and `app_name`.
+func RequireAppToken(
+	handler func(http.ResponseWriter, *http.Request, *models.Application)) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		//vars := mux.Vars(req)
+		//appName := vars["app_name"]
+		//username := vars["username"]
 	}
 }
