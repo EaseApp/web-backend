@@ -22,7 +22,9 @@ $(APP): dependencies $(GOPATH)/bin/golint
 	@$(GOPATH)/bin/golint ./...
 	@echo ""
 	@echo "Testing..."
-	@go test -v ./...
+	@if go test -v ./... ; then \
+	  echo "TESTS PASSED!!!!!" ; \
+	  else echo "TESTS FAILED :'("; fi
 	@echo ""
 
 build: dependencies
