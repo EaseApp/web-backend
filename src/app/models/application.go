@@ -87,7 +87,7 @@ func (querier *ModelQuerier) AuthenticateApplication(
 	username, appName, appToken string) (*Application, error) {
 	user := querier.FindUser(username)
 	if user == nil {
-		return nil, errors.New("Couldn't find user with that name.")
+		return nil, errors.New("Couldn't find user with that name")
 	}
 
 	for _, app := range user.Applications {
@@ -95,5 +95,5 @@ func (querier *ModelQuerier) AuthenticateApplication(
 			return &app, nil
 		}
 	}
-	return nil, errors.New("Invalid App Token")
+	return nil, errors.New("Invalid application token")
 }
