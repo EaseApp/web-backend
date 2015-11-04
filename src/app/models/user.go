@@ -3,7 +3,6 @@ package models
 import (
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"log"
 	"math/big"
 	"time"
@@ -20,33 +19,6 @@ type User struct {
 	APIToken     string        `gorethink:"api_token" json:"api_token"`
 	CreatedAt    time.Time     `gorethink:"created_at" json:"created_at"`
 	Applications []Application `gorethink:"applications" json:"applications"`
-}
-
-// UserQuerier queries the user table and logs users in.
-type UserQuerier struct {
-	session *r.Session
-}
-
-// Application holds attributes for an Ease user's applications.
-type Application struct {
-	Name     string `gorethink:"name" json:"name"`
-	AppToken string `gorethink:"app_token" json:"app_token"`
-}
-
-// newApplication creates a new application with a token and the given name.
-func newApplication(appName string) (*Application, error) {
-	appToken, err := generateRandomString(30)
-	if err != nil {
-		log.Println("Error: Couldn't generate random API token.")
-		log.Println(err)
-		return nil, err
-	}
-	return &Application{Name: appName, AppToken: appToken}, nil
-}
-
-// NewUserQuerier returns a new UserQuerier.
-func NewUserQuerier(session *r.Session) *UserQuerier {
-	return &UserQuerier{session: session}
 }
 
 // NewUser creates a new user with tokens and a hashed password.
@@ -74,7 +46,7 @@ func NewUser(username, password string) (*User, error) {
 }
 
 // FindUserByAPIToken finds a user by an API token.
-func (querier *UserQuerier) FindUserByAPIToken(token string) *User {
+func (querier *ModelQuerier) FindUserByAPIToken(token string) *User {
 	res, err := r.Table("users").Filter(map[string]string{
 		"api_token": token,
 	}).Run(querier.session)
@@ -92,9 +64,9 @@ func (querier *UserQuerier) FindUserByAPIToken(token string) *User {
 // Save saves the given user and returns it.
 // It verifies that the given username isn't already taken.
 // Returns the updated user.
-func (querier *UserQuerier) Save(user *User) (*User, error) {
+func (querier *ModelQuerier) Save(user *User) (*User, error) {
 	// Check that a user with the given username doesn't already exist.
-	otherUser := querier.Find(user.Username)
+	otherUser := querier.FindUser(user.Username)
 	if otherUser != nil && user.ID != otherUser.ID {
 		return nil, errors.New("A user with that name already exists")
 	}
@@ -119,8 +91,8 @@ func (querier *UserQuerier) Save(user *User) (*User, error) {
 	return user, nil
 }
 
-// Find finds the user with the given username.  Returns nil if none found.
-func (querier *UserQuerier) Find(username string) *User {
+// FindUser finds the user with the given username.  Returns nil if none found.
+func (querier *ModelQuerier) FindUser(username string) *User {
 	res, err := r.Table("users").Filter(map[string]string{
 		"username": username,
 	}).Run(querier.session)
@@ -137,8 +109,8 @@ func (querier *UserQuerier) Find(username string) *User {
 
 // AttemptLogin attempts to login the user with the given username and password.
 // Returns the user if successful, nil if failed.
-func (querier *UserQuerier) AttemptLogin(username, password string) (*User, error) {
-	user := querier.Find(username)
+func (querier *ModelQuerier) AttemptLogin(username, password string) (*User, error) {
+	user := querier.FindUser(username)
 	if user == nil {
 		return nil, errors.New("Couldn't find user with that username")
 	}
@@ -148,59 +120,6 @@ func (querier *UserQuerier) AttemptLogin(username, password string) (*User, erro
 		return nil, errors.New("Password was invalid")
 	}
 	return user, nil
-}
-
-// CreateApplication creates a new application on the given user.
-func (querier *UserQuerier) CreateApplication(user *User, appName string) (*Application, error) {
-	app, err := newApplication(appName)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create a table for the new application.
-	_, err = r.DB("test").TableCreate(getTableName(user.Username, appName)).RunWrite(querier.session)
-	if err != nil {
-		return nil, err
-	}
-
-	user.Applications = append(user.Applications, *app)
-	user, err = querier.Save(user)
-	if err != nil {
-		return nil, err
-	}
-	return app, nil
-}
-
-// DeleteApplication handles deleting an application and dropping its table.
-func (querier *UserQuerier) DeleteApplication(user *User, appName string) (*User, error) {
-
-	// Search for the app to delete.
-	var newApps []Application
-	for i, app := range user.Applications {
-		if app.Name == appName {
-			newApps = append(user.Applications[:i], user.Applications[i+1:]...)
-		}
-	}
-
-	// If an app with that name does not exist.
-	if newApps == nil {
-		return nil, errors.New("Could not find application with that name")
-	}
-
-	// Drop the app's table.
-	_, err := r.DB("test").TableDrop(getTableName(user.Username, appName)).RunWrite(querier.session)
-	if err != nil {
-		return nil, err
-	}
-
-	// Resave the user with the updated application list.
-	user.Applications = newApps
-	return querier.Save(user)
-}
-
-// getTableName returns the name of the table for the given user's application.
-func getTableName(username, appName string) string {
-	return fmt.Sprintf("%v_%v", username, appName)
 }
 
 // Possible token chars.

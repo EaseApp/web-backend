@@ -9,15 +9,15 @@ import (
 	"github.com/EaseApp/web-backend/src/app/models"
 )
 
-var querier *models.UserQuerier
+var querier *models.ModelQuerier
 
 type errorResponse struct {
 	ErrCode    int    `json:"error_code"`
 	ErrMessage string `json:"error"`
 }
 
-// Init sets up the helpers global UserQuerier.
-func Init(q *models.UserQuerier) {
+// Init sets up the helpers global ModelQuerier.
+func Init(q *models.ModelQuerier) {
 	querier = q
 }
 
@@ -48,5 +48,16 @@ func RequireAPIToken(
 			return
 		}
 		handler(w, req, user)
+	}
+}
+
+// RequireAppToken requires that the given route has a valid AppToken.
+// It requires that the route contains `username` and `app_name`.
+func RequireAppToken(
+	handler func(http.ResponseWriter, *http.Request, *models.Application)) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		//vars := mux.Vars(req)
+		//appName := vars["app_name"]
+		//username := vars["username"]
 	}
 }
