@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/EaseApp/web-backend/src/lib"
 	r "github.com/dancannon/gorethink"
 )
 
@@ -96,4 +97,64 @@ func (querier *ModelQuerier) AuthenticateApplication(
 		}
 	}
 	return nil, errors.New("Invalid application token")
+}
+
+// SaveApplicationData saves the given data to the application's table at the given path.
+func (querier *ModelQuerier) SaveApplicationData(
+	app Application, path lib.Path, data interface{}) error {
+	if path.IsRoot() {
+		return errors.New("Cannot save data to application root")
+	}
+	res, err := r.Table(app.TableName).Filter(map[string]string{"name": path.TopLevelDocName}).Run(querier.session)
+	if err != nil {
+		return err
+	}
+
+	// Find the ID of the top-level doc.
+	var docID string
+
+	// If the top-level doc for this query doesn't exist yet, it needs to be created.
+	if res.IsNil() {
+		insertRes, err := r.Table(app.TableName).Insert(
+			map[string]interface{}{"name": path.TopLevelDocName, "data": nil}).RunWrite(querier.session)
+		if err != nil {
+			return err
+		}
+		docID = insertRes.GeneratedKeys[0]
+	} else {
+		var docStruct struct {
+			ID string `rethinkdb:"id"`
+		}
+		err = res.One(&docStruct)
+		if err != nil {
+			return err
+		}
+		docID = docStruct.ID
+	}
+
+	// Generate the nested data query.
+	nestedDataQuery := make(map[string]interface{})
+
+	if len(path.RemainingSegments) == 0 {
+		nestedDataQuery["data"] = data
+	} else {
+		nestedDataQuery["data"] = make(map[string]interface{})
+		lastNestedEntry := nestedDataQuery["data"].(map[string]interface{})
+		for idx, segment := range path.RemainingSegments {
+			// For the last part of the query, set it to the data, else nest further.
+			if idx == len(path.RemainingSegments)-1 {
+				lastNestedEntry[segment] = data
+			} else {
+				lastNestedEntry[segment] = make(map[string]interface{})
+				lastNestedEntry = lastNestedEntry[segment].(map[string]interface{})
+			}
+		}
+	}
+
+	// Upsert the given data at the nested path.
+	_, err = r.Table(app.TableName).Get(docID).Insert(
+		nestedDataQuery, r.InsertOpts{Conflict: "replace"},
+	).RunWrite(querier.session)
+
+	return err
 }
