@@ -30,7 +30,7 @@ func TestSaveAndFindUser(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEmpty(t, savedUser.ID)
 
-	foundUser := querier.Find("user")
+	foundUser := querier.FindUser("user")
 	require.NotNil(t, foundUser)
 	assertUsersEqual(t, savedUser, foundUser)
 	assertUsersEqual(t, user, foundUser)

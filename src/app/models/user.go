@@ -66,7 +66,7 @@ func (querier *ModelQuerier) FindUserByAPIToken(token string) *User {
 // Returns the updated user.
 func (querier *ModelQuerier) Save(user *User) (*User, error) {
 	// Check that a user with the given username doesn't already exist.
-	otherUser := querier.Find(user.Username)
+	otherUser := querier.FindUser(user.Username)
 	if otherUser != nil && user.ID != otherUser.ID {
 		return nil, errors.New("A user with that name already exists")
 	}
@@ -91,8 +91,8 @@ func (querier *ModelQuerier) Save(user *User) (*User, error) {
 	return user, nil
 }
 
-// Find finds the user with the given username.  Returns nil if none found.
-func (querier *ModelQuerier) Find(username string) *User {
+// FindUser finds the user with the given username.  Returns nil if none found.
+func (querier *ModelQuerier) FindUser(username string) *User {
 	res, err := r.Table("users").Filter(map[string]string{
 		"username": username,
 	}).Run(querier.session)
@@ -110,7 +110,7 @@ func (querier *ModelQuerier) Find(username string) *User {
 // AttemptLogin attempts to login the user with the given username and password.
 // Returns the user if successful, nil if failed.
 func (querier *ModelQuerier) AttemptLogin(username, password string) (*User, error) {
-	user := querier.Find(username)
+	user := querier.FindUser(username)
 	if user == nil {
 		return nil, errors.New("Couldn't find user with that username")
 	}
