@@ -3,21 +3,24 @@ package helpers
 import (
 	"encoding/json"
 	"errors"
+	"github.com/gorilla/websocket"
 	"log"
+
 	"net/http"
+	// "golang.org/x/net/websocket"
 
 	"github.com/EaseApp/web-backend/src/app/models"
 )
 
-var querier *models.UserQuerier
+var querier *models.Querier
 
 type errorResponse struct {
 	ErrCode    int    `json:"error_code"`
 	ErrMessage string `json:"error"`
 }
 
-// Init sets up the helpers global UserQuerier.
-func Init(q *models.UserQuerier) {
+// Init sets up the helpers global Querier.
+func Init(q *models.Querier) {
 	querier = q
 }
 
@@ -27,6 +30,19 @@ func SendError(errorCode int, err error, w http.ResponseWriter) {
 	log.Printf("Error: Returning status code %d with error message %s.\n", errorCode, err)
 	resp := errorResponse{ErrCode: errorCode, ErrMessage: err.Error()}
 	json.NewEncoder(w).Encode(resp)
+}
+
+func SendSocketError(err error, conn *websocket.Conn) {
+	resp := errorResponse{ErrCode: 500, ErrMessage: err.Error()}
+	byteArray, err := json.Marshal(resp)
+	if err != nil {
+		log.Println("Error: Cannot marshal JSON.")
+		return
+	}
+	err = conn.WriteMessage(1, byteArray)
+	if err != nil {
+		log.Println("Error: Can't send socket message")
+	}
 }
 
 // RequireAPIToken requires that the given route has a valid APIToken

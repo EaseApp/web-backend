@@ -1,15 +1,16 @@
 package integration
 
 import (
-	"github.com/EaseApp/web-backend/src/sync"
-	"github.com/gorilla/websocket"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/EaseApp/web-backend/src/sync"
+	"github.com/gorilla/websocket"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSocketConnection(t *testing.T) {
@@ -20,7 +21,6 @@ func TestSocketConnection(t *testing.T) {
 		publishTo    string
 		publishData  string
 		expectedData string
-		conn         *websocket.Conn
 	}{
 		{
 			// Subscribt to an application, get the relavent data
@@ -40,15 +40,15 @@ func TestSocketConnection(t *testing.T) {
 
 	for _, testcase := range testcases {
 		port := strings.Split(server.URL, ":")[2]
-		testcase.conn = openConnection("ws://localhost:" + port + "/sub")
-		defer testcase.conn.Close()
+		conn := openConnection("ws://localhost:" + port + "/sub")
+		defer conn.Close()
 
-		sendSocketData(testcase.conn, testcase.subscribeTo)
-		assert.Equal(t, testcase.subscribeTo, grabSocketData(testcase.conn))
+		sendSocketData(conn, testcase.subscribeTo)
+		assert.Equal(t, testcase.subscribeTo, grabSocketData(conn))
 
 		resp := sendJSON(testcase.publishData, "", server.URL, "/pub/"+testcase.publishTo, "POST", t)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		actual := grabSocketData(testcase.conn)
+		actual := grabSocketData(conn)
 		assert.Equal(t, testcase.expectedData, actual)
 	}
 	defer server.Close()

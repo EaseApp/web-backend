@@ -1,15 +1,16 @@
 package sync
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	// "github.com/codegangsta/negroni"
 
-	"github.com/gorilla/websocket"
-
+	"github.com/EaseApp/web-backend/src/app/controllers/helpers"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 var applications map[string][]Connection
@@ -46,7 +47,7 @@ func (s *SyncServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 func createRouting() *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/sub", subHandler)
-	router.HandleFunc("/pub/{application}", pubHandler)
+	router.HandleFunc("/pub/{user}/{applicationName}", pubHandler)
 	return router
 }
 
@@ -67,11 +68,12 @@ func subHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// msg := make([]byte, 512)
-
+	// TODO: Investigate. This ReadMessage method might block. Meaning, if you dont get a message immediately you're holding the server. Need to investigate.
 	_, p, err := ws.ReadMessage()
 	if err != nil {
 		log.Println(err)
+		friendlyErr := errors.New("Reading application error.")
+		helpers.SendSocketError(friendlyErr, ws)
 	}
 
 	name := string(p)
@@ -112,14 +114,15 @@ func decodeData(req *http.Request) ([]byte, error) {
 // pubHandler triggers a publishing event
 func pubHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	application := vars["application"]
+	user := vars["user"]
+	application := vars["applicationName"]
 
 	data, err := decodeData(req)
 	if err != nil {
 		log.Println(err)
 	}
 
-	publish(application, data)
+	publish(helpers.tableName(user, application), data)
 	fmt.Fprintf(w, "You just published!")
 
 }

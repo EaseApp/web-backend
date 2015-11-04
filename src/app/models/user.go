@@ -22,8 +22,8 @@ type User struct {
 	Applications []Application `gorethink:"applications" json:"applications"`
 }
 
-// UserQuerier queries the user table and logs users in.
-type UserQuerier struct {
+// Querier queries the user table and logs users in.
+type Querier struct {
 	session *r.Session
 }
 
@@ -38,9 +38,9 @@ func newApplication(appName string) (*Application, error) {
 	return &Application{Name: appName, AppToken: appToken}, nil
 }
 
-// NewUserQuerier returns a new UserQuerier.
-func NewUserQuerier(session *r.Session) *UserQuerier {
-	return &UserQuerier{session: session}
+// NewQuerier returns a new Querier.
+func NewQuerier(session *r.Session) *Querier {
+	return &Querier{session: session}
 }
 
 // NewUser creates a new user with tokens and a hashed password.
@@ -68,7 +68,7 @@ func NewUser(username, password string) (*User, error) {
 }
 
 // FindUserByAPIToken finds a user by an API token.
-func (querier *UserQuerier) FindUserByAPIToken(token string) *User {
+func (querier *Querier) FindUserByAPIToken(token string) *User {
 	res, err := r.Table("users").Filter(map[string]string{
 		"api_token": token,
 	}).Run(querier.session)
@@ -86,7 +86,7 @@ func (querier *UserQuerier) FindUserByAPIToken(token string) *User {
 // Save saves the given user and returns it.
 // It verifies that the given username isn't already taken.
 // Returns the updated user.
-func (querier *UserQuerier) Save(user *User) (*User, error) {
+func (querier *Querier) Save(user *User) (*User, error) {
 	// Check that a user with the given username doesn't already exist.
 	otherUser := querier.Find(user.Username)
 	if otherUser != nil && user.ID != otherUser.ID {
@@ -114,7 +114,7 @@ func (querier *UserQuerier) Save(user *User) (*User, error) {
 }
 
 // Find finds the user with the given username.  Returns nil if none found.
-func (querier *UserQuerier) Find(username string) *User {
+func (querier *Querier) Find(username string) *User {
 	res, err := r.Table("users").Filter(map[string]string{
 		"username": username,
 	}).Run(querier.session)
@@ -131,7 +131,7 @@ func (querier *UserQuerier) Find(username string) *User {
 
 // AttemptLogin attempts to login the user with the given username and password.
 // Returns the user if successful, nil if failed.
-func (querier *UserQuerier) AttemptLogin(username, password string) (*User, error) {
+func (querier *Querier) AttemptLogin(username, password string) (*User, error) {
 	user := querier.Find(username)
 	if user == nil {
 		return nil, errors.New("Couldn't find user with that username")
@@ -145,7 +145,7 @@ func (querier *UserQuerier) AttemptLogin(username, password string) (*User, erro
 }
 
 // CreateApplication creates a new application on the given user.
-func (querier *UserQuerier) CreateApplication(user *User, appName string) (*Application, error) {
+func (querier *Querier) CreateApplication(user *User, appName string) (*Application, error) {
 	app, err := newApplication(appName)
 	if err != nil {
 		return nil, err

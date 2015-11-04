@@ -43,10 +43,10 @@ func (s *EaseServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 func createRoutingMux(client *db.Client) *mux.Router {
 
 	// Set up the queriers and controllers.
-	userQuerier := models.NewUserQuerier(client.Session)
+	querier := models.NewQuerier(client.Session)
 
-	usercontroller.Init(userQuerier)
-	helpers.Init(userQuerier)
+	usercontroller.Init(querier)
+	helpers.Init(querier)
 
 	router := mux.NewRouter()
 
