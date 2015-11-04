@@ -133,26 +133,75 @@ func (querier *ModelQuerier) SaveApplicationData(
 	}
 
 	// Generate the nested data query.
-	nestedDataQuery := make(map[string]interface{})
+	query := path.ToNestedQuery(data)
 
+	// Upsert the given data at the nested path.
+	_, err = r.Table(app.TableName).Get(docID).Update(query).RunWrite(querier.session)
+
+	return err
+}
+
+// ReadApplicationData reads the application's data at the given path and returns it.
+func (querier *ModelQuerier) ReadApplicationData(
+	app *Application, path lib.Path) (interface{}, error) {
+	// Send back all the documents if root.
+	if path.IsRoot() {
+		res, err := r.Table(app.TableName).Filter(map[string]string{}).Run(querier.session)
+		if err != nil {
+			return nil, err
+		}
+		var data interface{}
+		err = res.All(&data)
+		return data, err
+	}
+
+	res, err := r.Table(app.TableName).Filter(map[string]string{"name": path.TopLevelDocName}).Run(querier.session)
+	if err != nil {
+		return nil, err
+	}
+
+	// If the top-level doc for this query doesn't exist, return nil.
+	if res.IsNil() {
+		return nil, nil
+	}
+
+	var data interface{}
+	err = res.One(&data)
+	if err != nil {
+		return nil, err
+	}
+
+	// If nested data isn't requested, return it.
 	if len(path.RemainingSegments) == 0 {
-		nestedDataQuery["data"] = data
-	} else {
-		nestedDataQuery["data"] = make(map[string]interface{})
-		lastNestedEntry := nestedDataQuery["data"].(map[string]interface{})
-		for idx, segment := range path.RemainingSegments {
-			// For the last part of the query, set it to the data, else nest further.
-			if idx == len(path.RemainingSegments)-1 {
-				lastNestedEntry[segment] = data
-			} else {
-				lastNestedEntry[segment] = make(map[string]interface{})
-				lastNestedEntry = lastNestedEntry[segment].(map[string]interface{})
-			}
+		return data, nil
+	}
+
+	nextMapLevel, ok := data.(map[string]interface{})
+	if !ok {
+		return nil, nil
+	}
+
+	// Dive into the nested maps.
+	for idx, segment := range path.RemainingSegments {
+		// Try to get the next nested level for each remaining segment.
+		_, ok = nextMapLevel[segment]
+		if !ok {
+			return nil, nil
+		}
+
+		// Return the final data if this is the last segment
+		if idx == len(path.RemainingSegments)-1 {
+			return nextMapLevel[segment], nil
+		}
+
+		nextMapLevel, ok = nextMapLevel[segment].(map[string]interface{})
+		// The nest doesn't go any further, so return nil.
+		if !ok {
+			return nil, nil
 		}
 	}
 
-	// Upsert the given data at the nested path.
-	_, err = r.Table(app.TableName).Get(docID).Update(nestedDataQuery).RunWrite(querier.session)
-
-	return err
+	// This should never be reached.
+	log.Println("ERROR: This should never be reached.")
+	return nil, nil
 }
