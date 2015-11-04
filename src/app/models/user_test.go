@@ -81,7 +81,10 @@ func getDBClient(t *testing.T) *db.Client {
 	r.Wait().Exec(client.Session)
 
 	// Clear the user table for the tests.
+	// Also clear the application tables.
 	r.DB("test").Table("users").Delete().Run(client.Session)
+	r.DB("test").TableDrop("user_app1").Run(client.Session)
+	r.DB("test").TableDrop("user_app2").Run(client.Session)
 
 	return client
 }
