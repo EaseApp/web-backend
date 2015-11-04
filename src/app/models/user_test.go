@@ -25,11 +25,7 @@ var localDBAddr = "localhost:28015"
 func TestSaveAndFindUser(t *testing.T) {
 	user, err := NewUser("user", "pass")
 	require.NoError(t, err)
-<<<<<<< HEAD
-	querier := getQuerier(t)
-=======
 	querier := getModelQuerier(t)
->>>>>>> master
 	savedUser, err := querier.Save(user)
 	require.NoError(t, err)
 	assert.NotEmpty(t, savedUser.ID)
@@ -43,11 +39,7 @@ func TestSaveAndFindUser(t *testing.T) {
 func TestAttemptLogin_Success(t *testing.T) {
 	user, err := NewUser("user", "pass")
 	require.NoError(t, err)
-<<<<<<< HEAD
-	querier := getQuerier(t)
-=======
 	querier := getModelQuerier(t)
->>>>>>> master
 	savedUser, err := querier.Save(user)
 	require.NoError(t, err)
 
@@ -59,11 +51,7 @@ func TestAttemptLogin_Success(t *testing.T) {
 func TestAttemptLogin_Fail(t *testing.T) {
 	user, err := NewUser("user", "pass")
 	require.NoError(t, err)
-<<<<<<< HEAD
-	querier := getQuerier(t)
-=======
 	querier := getModelQuerier(t)
->>>>>>> master
 	_, err = querier.Save(user)
 	require.NoError(t, err)
 
@@ -80,15 +68,9 @@ func assertUsersEqual(t *testing.T, u1, u2 *User) {
 	assert.WithinDuration(t, u1.CreatedAt, u2.CreatedAt, time.Second)
 }
 
-<<<<<<< HEAD
-func getQuerier(t *testing.T) *Querier {
-	client := getDBClient(t)
-	return NewQuerier(client.Session)
-=======
 func getModelQuerier(t *testing.T) *ModelQuerier {
 	client := getDBClient(t)
 	return NewModelQuerier(client.Session)
->>>>>>> master
 }
 
 func getDBClient(t *testing.T) *db.Client {

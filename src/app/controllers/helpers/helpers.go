@@ -13,11 +13,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-<<<<<<< HEAD
-var querier *models.Querier
-=======
 var querier *models.ModelQuerier
->>>>>>> master
 
 type errorResponse struct {
 	ErrCode    int    `json:"error_code"`

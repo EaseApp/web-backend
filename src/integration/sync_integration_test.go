@@ -15,6 +15,7 @@ import (
 
 func TestSocketConnection(t *testing.T) {
 	server := setUpSyncServer(t)
+	apiToken := createTestUser(server.URL, t)
 
 	testcases := []struct {
 		subscribeTo  string
@@ -46,7 +47,7 @@ func TestSocketConnection(t *testing.T) {
 		sendSocketData(conn, testcase.subscribeTo)
 		assert.Equal(t, testcase.subscribeTo, grabSocketData(conn))
 
-		resp := sendJSON(testcase.publishData, "", server.URL, "/pub/"+testcase.publishTo, "POST", t)
+		resp := sendJSON(testcase.publishData, apiToken, server.URL, "/pub/"+testcase.publishTo, "POST", t)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		actual := grabSocketData(conn)
 		assert.Equal(t, testcase.expectedData, actual)

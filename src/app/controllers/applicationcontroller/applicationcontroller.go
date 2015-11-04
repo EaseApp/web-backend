@@ -9,12 +9,12 @@ import (
 	"github.com/EaseApp/web-backend/src/app/models"
 )
 
-var querier *models.Querier
+var querier *models.ModelQuerier
 
 // Init sets the hacky global Querier to the given querier.
 // This is to simplify the code because for this school project, we don't need
 // to have perfect dependency injection practices.
-func Init(applicationQuerier *models.Querier) {
+func Init(applicationQuerier *models.ModelQuerier) {
 	querier = applicationQuerier
 }
 

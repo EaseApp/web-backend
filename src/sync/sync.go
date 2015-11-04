@@ -9,6 +9,7 @@ import (
 	// "github.com/codegangsta/negroni"
 
 	"github.com/EaseApp/web-backend/src/app/controllers/helpers"
+	"github.com/EaseApp/web-backend/src/app/models"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
@@ -47,7 +48,7 @@ func (s *SyncServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 func createRouting() *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/sub", subHandler)
-	router.HandleFunc("/pub/{user}/{applicationName}", pubHandler)
+	router.HandleFunc("/pub/{username}/{app_name}", helpers.RequireAppToken(pubHandler))
 	return router
 }
 
@@ -112,17 +113,17 @@ func decodeData(req *http.Request) ([]byte, error) {
 }
 
 // pubHandler triggers a publishing event
-func pubHandler(w http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
-	user := vars["user"]
-	application := vars["applicationName"]
+func pubHandler(w http.ResponseWriter, req *http.Request, app *models.Application) {
+	// vars := mux.Vars(req)
+	// user := vars["username"]
+	// application := vars["applicationName"]
 
 	data, err := decodeData(req)
 	if err != nil {
 		log.Println(err)
 	}
 
-	publish(helpers.tableName(user, application), data)
+	publish(app.TableName, data)
 	fmt.Fprintf(w, "You just published!")
 
 }
