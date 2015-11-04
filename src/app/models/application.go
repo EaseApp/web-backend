@@ -101,7 +101,7 @@ func (querier *ModelQuerier) AuthenticateApplication(
 
 // SaveApplicationData saves the given data to the application's table at the given path.
 func (querier *ModelQuerier) SaveApplicationData(
-	app Application, path lib.Path, data interface{}) error {
+	app *Application, path lib.Path, data interface{}) error {
 	if path.IsRoot() {
 		return errors.New("Cannot save data to application root")
 	}
@@ -152,9 +152,7 @@ func (querier *ModelQuerier) SaveApplicationData(
 	}
 
 	// Upsert the given data at the nested path.
-	_, err = r.Table(app.TableName).Get(docID).Insert(
-		nestedDataQuery, r.InsertOpts{Conflict: "replace"},
-	).RunWrite(querier.session)
+	_, err = r.Table(app.TableName).Get(docID).Update(nestedDataQuery).RunWrite(querier.session)
 
 	return err
 }
