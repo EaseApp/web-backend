@@ -7,18 +7,17 @@ import (
 	"net/http"
 
 	"github.com/EaseApp/web-backend/src/app/models"
-	"github.com/gorilla/mux"
 )
 
-var querier *models.UserQuerier
+var querier *models.ModelQuerier
 
 type errorResponse struct {
 	ErrCode    int    `json:"error_code"`
 	ErrMessage string `json:"error"`
 }
 
-// Init sets up the helpers global UserQuerier.
-func Init(q *models.UserQuerier) {
+// Init sets up the helpers global ModelQuerier.
+func Init(q *models.ModelQuerier) {
 	querier = q
 }
 

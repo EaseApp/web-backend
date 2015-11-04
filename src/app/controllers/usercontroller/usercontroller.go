@@ -11,12 +11,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var querier *models.UserQuerier
+var querier *models.ModelQuerier
 
-// Init sets the hacky global UserQuerier to the given querier.
+// Init sets the hacky global ModelQuerier to the given querier.
 // This is to simplify the code because for this school project, we don't need
 // to have perfect dependency injection practices.
-func Init(userQuerier *models.UserQuerier) {
+func Init(userQuerier *models.ModelQuerier) {
 	querier = userQuerier
 }
 
