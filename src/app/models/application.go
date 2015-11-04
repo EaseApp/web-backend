@@ -80,3 +80,20 @@ func (querier *ModelQuerier) DeleteApplication(user *User, appName string) (*Use
 	user.Applications = newApps
 	return querier.Save(user)
 }
+
+// AuthenticateApplication checks that the given username, app name, and
+// app token are valid, and if so returns the given application.
+func (querier *ModelQuerier) AuthenticateApplication(
+	username, appName, appToken string) (*Application, error) {
+	user := querier.FindUser(username)
+	if user == nil {
+		return nil, errors.New("Couldn't find user with that name")
+	}
+
+	for _, app := range user.Applications {
+		if app.Name == appName && app.AppToken == appToken {
+			return &app, nil
+		}
+	}
+	return nil, errors.New("Invalid application token")
+}

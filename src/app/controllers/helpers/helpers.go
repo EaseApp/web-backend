@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/EaseApp/web-backend/src/app/models"
+	"github.com/gorilla/mux"
 )
 
 var querier *models.ModelQuerier
@@ -56,8 +57,15 @@ func RequireAPIToken(
 func RequireAppToken(
 	handler func(http.ResponseWriter, *http.Request, *models.Application)) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		//vars := mux.Vars(req)
-		//appName := vars["app_name"]
-		//username := vars["username"]
+		vars := mux.Vars(req)
+		appName := vars["app_name"]
+		username := vars["username"]
+		appToken := req.Header.Get("Authorization")
+		app, err := querier.AuthenticateApplication(username, appName, appToken)
+		if err != nil {
+			SendError(http.StatusUnauthorized, err, w)
+		} else {
+			handler(w, req, app)
+		}
 	}
 }
