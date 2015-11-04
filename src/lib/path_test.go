@@ -35,14 +35,14 @@ func TestParsePath(t *testing.T) {
 		},
 		{
 			"/",
-			Path{OriginalString: "/", TableName: "", RemainingSegments: []string{}},
+			Path{OriginalString: "/", TopLevelDocName: "", RemainingSegments: []string{}},
 			nil,
 		},
 		{
 			"/hi/there",
 			Path{
 				OriginalString:    "/hi/there",
-				TableName:         "hi",
+				TopLevelDocName:   "hi",
 				RemainingSegments: []string{"there"}},
 			nil,
 		},
@@ -50,7 +50,7 @@ func TestParsePath(t *testing.T) {
 			"/hi/there/sup",
 			Path{
 				OriginalString:    "/hi/there/sup",
-				TableName:         "hi",
+				TopLevelDocName:   "hi",
 				RemainingSegments: []string{"there", "sup"}},
 			nil,
 		},

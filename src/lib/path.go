@@ -9,7 +9,7 @@ import (
 // Path represents an application data path.
 type Path struct {
 	OriginalString    string
-	TableName         string
+	TopLevelDocName   string
 	RemainingSegments []string
 }
 
@@ -28,12 +28,12 @@ func ParsePath(pathStr string) (Path, error) {
 		return path, errors.New("Invalid path format")
 	}
 	segments := strings.Split(pathStr, "/")
-	path.TableName = segments[1]
+	path.TopLevelDocName = segments[1]
 	path.RemainingSegments = segments[2:]
 	return path, nil
 }
 
 // IsRoot returns true iff a path refers to the root of all docs.
 func (p Path) IsRoot() bool {
-	return p.TableName == ""
+	return p.TopLevelDocName == ""
 }
