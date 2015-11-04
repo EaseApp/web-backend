@@ -69,6 +69,80 @@ func TestSignUp(t *testing.T) {
 	}
 }
 
+func TestDeleteApplication(t *testing.T) {
+	server, _ := setUpServer(t)
+	defer server.Close()
+
+	apiToken := createTestUser(server.URL, t)
+
+	// Create two applications.
+	resp := sendJSON("", apiToken, server.URL, "/users/applications/bestappevar", "POST", t)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	resp = sendJSON("", apiToken, server.URL, "/users/applications/lol", "POST", t)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	testcases := []struct {
+		token         string
+		appToDelete   string
+		appNames      []string
+		expectedCode  int
+		expectedError string
+	}{
+		// Invalid token.
+		{
+			token:         "badtoken",
+			appToDelete:   "lol",
+			appNames:      nil,
+			expectedCode:  http.StatusUnauthorized,
+			expectedError: "Authorization token does not match.",
+		},
+		// Invalid app name.
+		{
+			token:         apiToken,
+			appToDelete:   "idontexist",
+			appNames:      nil,
+			expectedCode:  http.StatusInternalServerError,
+			expectedError: "Failed to delete application",
+		},
+		// Valid token and the app deleted.
+		{
+			token:         apiToken,
+			appToDelete:   "bestappevar",
+			appNames:      []string{"lol"},
+			expectedCode:  http.StatusOK,
+			expectedError: "",
+		},
+		// Valid token and both apps deleted.
+		{
+			token:         apiToken,
+			appToDelete:   "lol",
+			appNames:      []string{},
+			expectedCode:  http.StatusOK,
+			expectedError: "",
+		},
+	}
+
+	for _, testcase := range testcases {
+		resp := sendJSON("", testcase.token, server.URL, "/users/applications/"+testcase.appToDelete, "DELETE", t)
+
+		assert.Equal(t, testcase.expectedCode, resp.StatusCode)
+
+		// Error expected.
+		if testcase.expectedError != "" {
+			var errStruct errorResp
+			json.NewDecoder(resp.Body).Decode(&errStruct)
+			assert.Equal(t, testcase.expectedError, errStruct.Err)
+		} else { // No error expected.
+			var apps []models.Application
+			json.NewDecoder(resp.Body).Decode(&apps)
+			for i, app := range apps {
+				assert.Equal(t, testcase.appNames[i], app.Name)
+				assert.NotEmpty(t, app.AppToken)
+			}
+		}
+	}
+}
+
 func TestListApplications(t *testing.T) {
 	server, client := setUpServer(t)
 	defer server.Close()
@@ -123,7 +197,7 @@ func TestListApplications(t *testing.T) {
 		}
 	}
 
-	// Delete the created application table.
+	// Delete the created application tables.
 	r.DB("test").TableDrop("ronswanson_bestappevar").RunWrite(client.Session)
 	r.DB("test").TableDrop("ronswanson_lol").RunWrite(client.Session)
 }

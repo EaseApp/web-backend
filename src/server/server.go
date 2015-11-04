@@ -45,6 +45,7 @@ func createRoutingMux(client *db.Client) *mux.Router {
 	// Set up the queriers and controllers.
 	querier := models.NewQuerier(client.Session)
 
+
 	usercontroller.Init(querier)
 	helpers.Init(querier)
 
@@ -61,6 +62,8 @@ func createRoutingMux(client *db.Client) *mux.Router {
 		helpers.RequireAPIToken(usercontroller.CreateApplicationHandler)).Methods("POST")
 	router.HandleFunc("/users/applications",
 		helpers.RequireAPIToken(usercontroller.ListApplicationsHandler)).Methods("GET")
+	router.HandleFunc("/users/applications/{application}",
+		helpers.RequireAPIToken(usercontroller.DeleteApplicationHandler)).Methods("DELETE")
 
 	return router
 }

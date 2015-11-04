@@ -10,17 +10,22 @@ import (
 	// "golang.org/x/net/websocket"
 
 	"github.com/EaseApp/web-backend/src/app/models"
+	"github.com/gorilla/mux"
 )
 
+<<<<<<< HEAD
 var querier *models.Querier
+=======
+var querier *models.ModelQuerier
+>>>>>>> master
 
 type errorResponse struct {
 	ErrCode    int    `json:"error_code"`
 	ErrMessage string `json:"error"`
 }
 
-// Init sets up the helpers global Querier.
-func Init(q *models.Querier) {
+// Init sets up the helpers global ModelQuerier.
+func Init(q *models.ModelQuerier) {
 	querier = q
 }
 
@@ -64,5 +69,23 @@ func RequireAPIToken(
 			return
 		}
 		handler(w, req, user)
+	}
+}
+
+// RequireAppToken requires that the given route has a valid AppToken.
+// It requires that the route contains `username` and `app_name`.
+func RequireAppToken(
+	handler func(http.ResponseWriter, *http.Request, *models.Application)) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		vars := mux.Vars(req)
+		appName := vars["app_name"]
+		username := vars["username"]
+		appToken := req.Header.Get("Authorization")
+		app, err := querier.AuthenticateApplication(username, appName, appToken)
+		if err != nil {
+			SendError(http.StatusUnauthorized, err, w)
+		} else {
+			handler(w, req, app)
+		}
 	}
 }

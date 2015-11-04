@@ -25,12 +25,16 @@ var localDBAddr = "localhost:28015"
 func TestSaveAndFindUser(t *testing.T) {
 	user, err := NewUser("user", "pass")
 	require.NoError(t, err)
+<<<<<<< HEAD
 	querier := getQuerier(t)
+=======
+	querier := getModelQuerier(t)
+>>>>>>> master
 	savedUser, err := querier.Save(user)
 	require.NoError(t, err)
 	assert.NotEmpty(t, savedUser.ID)
 
-	foundUser := querier.Find("user")
+	foundUser := querier.FindUser("user")
 	require.NotNil(t, foundUser)
 	assertUsersEqual(t, savedUser, foundUser)
 	assertUsersEqual(t, user, foundUser)
@@ -39,7 +43,11 @@ func TestSaveAndFindUser(t *testing.T) {
 func TestAttemptLogin_Success(t *testing.T) {
 	user, err := NewUser("user", "pass")
 	require.NoError(t, err)
+<<<<<<< HEAD
 	querier := getQuerier(t)
+=======
+	querier := getModelQuerier(t)
+>>>>>>> master
 	savedUser, err := querier.Save(user)
 	require.NoError(t, err)
 
@@ -51,7 +59,11 @@ func TestAttemptLogin_Success(t *testing.T) {
 func TestAttemptLogin_Fail(t *testing.T) {
 	user, err := NewUser("user", "pass")
 	require.NoError(t, err)
+<<<<<<< HEAD
 	querier := getQuerier(t)
+=======
+	querier := getModelQuerier(t)
+>>>>>>> master
 	_, err = querier.Save(user)
 	require.NoError(t, err)
 
@@ -68,9 +80,15 @@ func assertUsersEqual(t *testing.T, u1, u2 *User) {
 	assert.WithinDuration(t, u1.CreatedAt, u2.CreatedAt, time.Second)
 }
 
+<<<<<<< HEAD
 func getQuerier(t *testing.T) *Querier {
 	client := getDBClient(t)
 	return NewQuerier(client.Session)
+=======
+func getModelQuerier(t *testing.T) *ModelQuerier {
+	client := getDBClient(t)
+	return NewModelQuerier(client.Session)
+>>>>>>> master
 }
 
 func getDBClient(t *testing.T) *db.Client {
@@ -81,7 +99,10 @@ func getDBClient(t *testing.T) *db.Client {
 	r.Wait().Exec(client.Session)
 
 	// Clear the user table for the tests.
+	// Also clear the application tables.
 	r.DB("test").Table("users").Delete().Run(client.Session)
+	r.DB("test").TableDrop("user_app1").Run(client.Session)
+	r.DB("test").TableDrop("user_app2").Run(client.Session)
 
 	return client
 }
