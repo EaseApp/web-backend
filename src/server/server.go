@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/EaseApp/web-backend/src/app/controllers/applicationcontroller"
 	"github.com/EaseApp/web-backend/src/app/controllers/helpers"
 	"github.com/EaseApp/web-backend/src/app/controllers/usercontroller"
 	"github.com/EaseApp/web-backend/src/app/models"
@@ -46,6 +47,7 @@ func createRoutingMux(client *db.Client) *mux.Router {
 	querier := models.NewModelQuerier(client.Session)
 
 	usercontroller.Init(querier)
+	applicationcontroller.Init(querier)
 	helpers.Init(querier)
 
 	router := mux.NewRouter()
@@ -58,11 +60,11 @@ func createRoutingMux(client *db.Client) *mux.Router {
 	router.HandleFunc("/users/sign_up", usercontroller.SignUpHandler).Methods("POST")
 	router.HandleFunc("/users/sign_in", usercontroller.SignInHandler).Methods("POST")
 	router.HandleFunc("/users/applications/{application}",
-		helpers.RequireAPIToken(usercontroller.CreateApplicationHandler)).Methods("POST")
+		helpers.RequireAPIToken(applicationcontroller.CreateApplicationHandler)).Methods("POST")
 	router.HandleFunc("/users/applications",
-		helpers.RequireAPIToken(usercontroller.ListApplicationsHandler)).Methods("GET")
+		helpers.RequireAPIToken(applicationcontroller.ListApplicationsHandler)).Methods("GET")
 	router.HandleFunc("/users/applications/{application}",
-		helpers.RequireAPIToken(usercontroller.DeleteApplicationHandler)).Methods("DELETE")
+		helpers.RequireAPIToken(applicationcontroller.DeleteApplicationHandler)).Methods("DELETE")
 
 	return router
 }
