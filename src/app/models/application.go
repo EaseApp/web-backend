@@ -220,8 +220,3 @@ func (querier *ModelQuerier) ReadApplicationData(
 	log.Println("ERROR: This should never be reached.")
 	return nil, nil
 }
-
-// DeleteApplicationData deletes the application's data at the given path.
-func (querier *ModelQuerier) ReadApplicationData(
-	app *Application, path lib.Path) error {
-}

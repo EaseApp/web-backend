@@ -63,6 +63,12 @@ func TestSaveAndReadApplicationData(t *testing.T) {
 		expectedReadData interface{}
 	}{
 		{
+			"/howdy",
+			"/",
+			map[string]interface{}{"yeah": "wassuuuup", "multiple": []int{1, 2}},
+			map[string]interface{}{"howdy": map[string]interface{}{"yeah": "wassuuuup", "multiple": []interface{}{float64(1), float64(2)}}},
+		},
+		{
 			"/hello/world/hi",
 			"/hello/world/hi",
 			10,
@@ -72,19 +78,13 @@ func TestSaveAndReadApplicationData(t *testing.T) {
 			"/a/b/c",
 			"/a/b",
 			10,
-			map[string]interface{}{"hi": float64(10)},
+			map[string]interface{}{"c": float64(10)},
 		},
 		{
 			"/yes/no/maybe",
 			"/yes/no/maybe",
 			map[string]interface{}{"hello": "wassuuuup", "multiple": []int{1, 2}},
 			map[string]interface{}{"hello": "wassuuuup", "multiple": []interface{}{float64(1), float64(2)}},
-		},
-		{
-			"/howdy",
-			"/",
-			map[string]interface{}{"yeah": "wassuuuup", "multiple": []int{1, 2}},
-			map[string]interface{}{"howdy": map[string]interface{}{"yeah": "wassuuuup", "multiple": []interface{}{float64(1), float64(2)}}},
 		},
 	}
 
