@@ -67,11 +67,11 @@ func createRoutingMux(client *db.Client) *mux.Router {
 		helpers.RequireAPIToken(applicationcontroller.DeleteApplicationHandler)).Methods("DELETE")
 
 	// Application data routes.
-	router.HandleFunc("/data/{username}/{app_name}",
+	router.HandleFunc("/api/data/{username}/{app_name}",
 		helpers.RequireAppToken(applicationcontroller.ReadApplicationDataHandler)).Methods("GET")
-	router.HandleFunc("/data/{username}/{app_name}",
+	router.HandleFunc("/api/data/{username}/{app_name}",
 		helpers.RequireAppToken(applicationcontroller.SaveApplicationDataHandler)).Methods("POST")
-	router.HandleFunc("/data/{username}/{app_name}",
+	router.HandleFunc("/api/data/{username}/{app_name}",
 		helpers.RequireAppToken(applicationcontroller.DeleteApplicationDataHandler)).Methods("DELETE")
 
 	return router
