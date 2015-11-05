@@ -180,7 +180,7 @@ func (querier *ModelQuerier) ReadApplicationData(
 		return nil, nil
 	}
 
-	var doc map[string]interface{}
+	var doc appDoc
 	err = res.One(&doc)
 	if err != nil {
 		return nil, err
@@ -188,10 +188,10 @@ func (querier *ModelQuerier) ReadApplicationData(
 
 	// If nested data isn't requested, return all the doc's data.
 	if len(path.RemainingSegments) == 0 {
-		return doc["data"], nil
+		return doc.Data, nil
 	}
 
-	nextMapLevel, ok := doc["data"].(map[string]interface{})
+	nextMapLevel, ok := doc.Data.(map[string]interface{})
 	if !ok {
 		return nil, nil
 	}
@@ -219,4 +219,73 @@ func (querier *ModelQuerier) ReadApplicationData(
 	// This should never be reached.
 	log.Println("ERROR: This should never be reached.")
 	return nil, nil
+}
+
+// DeleteApplicationData deletes the application data at the given path.
+func (querier *ModelQuerier) DeleteApplicationData(
+	app *Application, path lib.Path) error {
+
+	// Empty the table if the path is root.
+	if path.IsRoot() {
+		_, err := r.Table(app.TableName).Delete().RunWrite(querier.session)
+		return err
+	}
+
+	// Delete the top-level doc if the path isn't nested.
+	if len(path.RemainingSegments) == 0 {
+		_, err := r.Table(app.TableName).Filter(map[string]string{
+			"name": path.TopLevelDocName}).Delete().RunWrite(querier.session)
+		return err
+	}
+
+	// If the path is nested, read the data, then delete the given entry from the map,
+	// then resave.
+
+	// The below code is partly taken from ReadApplicationData and can probably be refactored.
+	res, err := r.Table(app.TableName).Filter(map[string]string{"name": path.TopLevelDocName}).Run(querier.session)
+	if err != nil {
+		return err
+	}
+
+	// If the top-level doc for this query doesn't exist, return nil.
+	if res.IsNil() {
+		return nil
+	}
+
+	var doc appDoc
+	err = res.One(&doc)
+	if err != nil {
+		return err
+	}
+
+	nextMapLevel, ok := doc.Data.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	// Dive into the nested maps.
+	for idx, segment := range path.RemainingSegments {
+		// Try to get the next nested level for each remaining segment.
+		_, ok = nextMapLevel[segment]
+		if !ok {
+			return nil
+		}
+
+		// If this is the last segment, delete it from the map and replace in the db.
+		if idx == len(path.RemainingSegments)-1 {
+			delete(nextMapLevel, segment)
+			_, err = r.Table(app.TableName).Get(doc.ID).Replace(doc).RunWrite(querier.session)
+			return err
+		}
+
+		nextMapLevel, ok = nextMapLevel[segment].(map[string]interface{})
+		// The nest doesn't go any further, so return nil.
+		if !ok {
+			return nil
+		}
+	}
+
+	// This should never be reached.
+	log.Println("ERROR: This should never be reached.")
+	return nil
 }
