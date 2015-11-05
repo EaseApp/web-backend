@@ -311,8 +311,61 @@ func TestSignIn(t *testing.T) {
 
 }
 
+func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
+	// This test isn't as extensive as some of the other ones because these components are already
+	// tested well in models/application_test.
+
+	server, client := setUpServer(t)
+	defer server.Close()
+
+	appToken := createTestApplication(server.URL, t)
+
+	resp := sendJSON(`{"path":"/hello", "data":{"nested":"objects", "yes": 1}}`,
+		appToken, server.URL, "/api/data/ronswanson/bestappevar", "POST", t)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp = sendJSON(`{"path":"/hello"}`,
+		appToken, server.URL, "/api/data/ronswanson/bestappevar", "GET", t)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var data1 interface{}
+	err := json.NewDecoder(resp.Body).Decode(&data1)
+	assert.NoError(t, err)
+	assert.Equal(t, interface{}(map[string]interface{}{"nested": "objects", "yes": float64(1)}), data1)
+
+	resp = sendJSON(`{"path":"/hello/yes"}`,
+		appToken, server.URL, "/api/data/ronswanson/bestappevar", "DELETE", t)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp = sendJSON(`{"path":"/hello"}`,
+		appToken, server.URL, "/api/data/ronswanson/bestappevar", "GET", t)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var data2 interface{}
+	err = json.NewDecoder(resp.Body).Decode(&data2)
+	assert.NoError(t, err)
+	assert.Equal(t, interface{}(map[string]interface{}{"nested": "objects"}), data2)
+
+	// Delete the created application table.
+	r.DB("test").TableDrop("ronswanson_bestappevar").RunWrite(client.Session)
+}
+
 var testUserUsername = "ronswanson"
 var testUserPass = "meat"
+var testAppName = "bestappevar"
+
+// createTestApplication creates a test application (under a new user) and returns its app token.
+func createTestApplication(url string, t *testing.T) string {
+	apiToken := createTestUser(url, t)
+
+	resp := sendJSON("", apiToken, url, "/users/applications/bestappevar", "POST", t)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var app models.Application
+	err := json.NewDecoder(resp.Body).Decode(&app)
+	require.NoError(t, err)
+	return app.AppToken
+}
 
 // createTestUser creates a test user and returns its api token.
 func createTestUser(url string, t *testing.T) string {
