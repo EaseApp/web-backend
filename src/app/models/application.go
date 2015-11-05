@@ -165,18 +165,18 @@ func (querier *ModelQuerier) ReadApplicationData(
 		return nil, nil
 	}
 
-	var data interface{}
-	err = res.One(&data)
+	var doc map[string]interface{}
+	err = res.One(&doc)
 	if err != nil {
 		return nil, err
 	}
 
-	// If nested data isn't requested, return it.
+	// If nested data isn't requested, return all the doc's data.
 	if len(path.RemainingSegments) == 0 {
-		return data, nil
+		return doc["data"], nil
 	}
 
-	nextMapLevel, ok := data.(map[string]interface{})
+	nextMapLevel, ok := doc["data"].(map[string]interface{})
 	if !ok {
 		return nil, nil
 	}

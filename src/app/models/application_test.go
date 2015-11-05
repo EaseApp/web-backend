@@ -56,9 +56,53 @@ func TestSaveAndReadApplicationData(t *testing.T) {
 	app, err := querier.CreateApplication(user, "app1")
 	require.NoError(t, err)
 
-	path, err := lib.ParsePath("/hello/world/hi")
-	require.NoError(t, err)
+	testcases := []struct {
+		writePath        string
+		readPath         string
+		writeData        interface{}
+		expectedReadData interface{}
+	}{
+		{
+			"/hello/world/hi",
+			"/hello/world/hi",
+			10,
+			float64(10),
+		},
+		{
+			"/hello/world/hi",
+			"/hello/world",
+			10,
+			map[string]interface{}{"hi": float64(10)},
+		},
+		{
+			"/hello/world/hi",
+			"/hello/world",
+			10,
+			map[string]interface{}{"hi": float64(10)},
+		},
+		{
+			"/hello/world/hi",
+			"/hello/world/hi",
+			map[string]interface{}{"hello": "wassuuuup", "multiple": []int{1, 2}},
+			map[string]interface{}{"hello": "wassuuuup", "multiple": []interface{}{float64(1), float64(2)}},
+		},
+		{
+			"/hello",
+			"/",
+			map[string]interface{}{"yeah": "wassuuuup", "multiple": []int{1, 2}},
+			map[string]interface{}{"hello": map[string]interface{}{"yeah": "wassuuuup", "multiple": []interface{}{float64(1), float64(2)}}},
+		},
+	}
 
-	err = querier.SaveApplicationData(app, path, 10)
-	assert.NoError(t, err)
+	for _, testcase := range testcases {
+		writePath, err := lib.ParsePath(testcase.writePath)
+		require.NoError(t, err)
+
+		err = querier.SaveApplicationData(app, writePath, testcase.writeData)
+		assert.NoError(t, err)
+
+		readPath, err := lib.ParsePath(testcase.readPath)
+		data, err := querier.ReadApplicationData(app, readPath)
+		assert.Equal(t, testcase.expectedReadData, data)
+	}
 }
