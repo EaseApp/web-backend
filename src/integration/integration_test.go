@@ -346,6 +346,16 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, interface{}(map[string]interface{}{"nested": "objects"}), data2)
 
+	// Verify data can't be accessed with a bad token.
+	resp = sendJSON(`{"path":"/hello"}`,
+		"iamtoken", server.URL, "/api/data/ronswanson/bestappevar", "GET", t)
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+
+	var data3 interface{}
+	err = json.NewDecoder(resp.Body).Decode(&data3)
+	assert.NoError(t, err)
+	assert.Equal(t, interface{}(map[string]interface{}{"error_code": float64(401), "error": "Invalid application token"}), data3)
+
 	// Delete the created application table.
 	r.DB("test").TableDrop("ronswanson_bestappevar").RunWrite(client.Session)
 }
