@@ -69,28 +69,22 @@ func TestSaveAndReadApplicationData(t *testing.T) {
 			float64(10),
 		},
 		{
-			"/hello/world/hi",
-			"/hello/world",
+			"/a/b/c",
+			"/a/b",
 			10,
 			map[string]interface{}{"hi": float64(10)},
 		},
 		{
-			"/hello/world/hi",
-			"/hello/world",
-			10,
-			map[string]interface{}{"hi": float64(10)},
-		},
-		{
-			"/hello/world/hi",
-			"/hello/world/hi",
+			"/yes/no/maybe",
+			"/yes/no/maybe",
 			map[string]interface{}{"hello": "wassuuuup", "multiple": []int{1, 2}},
 			map[string]interface{}{"hello": "wassuuuup", "multiple": []interface{}{float64(1), float64(2)}},
 		},
 		{
-			"/hello",
+			"/howdy",
 			"/",
 			map[string]interface{}{"yeah": "wassuuuup", "multiple": []int{1, 2}},
-			map[string]interface{}{"hello": map[string]interface{}{"yeah": "wassuuuup", "multiple": []interface{}{float64(1), float64(2)}}},
+			map[string]interface{}{"howdy": map[string]interface{}{"yeah": "wassuuuup", "multiple": []interface{}{float64(1), float64(2)}}},
 		},
 	}
 
@@ -104,5 +98,7 @@ func TestSaveAndReadApplicationData(t *testing.T) {
 		readPath, err := lib.ParsePath(testcase.readPath)
 		data, err := querier.ReadApplicationData(app, readPath)
 		assert.Equal(t, testcase.expectedReadData, data)
+		p, err := lib.ParsePath("/hello")
+		querier.SaveApplicationData(app, p, nil)
 	}
 }

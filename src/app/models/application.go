@@ -16,6 +16,13 @@ type Application struct {
 	TableName string `gorethink:"table_name" json:"-"`
 }
 
+// appDoc is the type of each document in an application table.
+type appDoc struct {
+	ID   string      `gorethink:"id"`
+	Name string      `gorethink:"name"`
+	Data interface{} `gorethink:"data"`
+}
+
 // newApplication creates a new application with a token and the given name.
 func newApplication(user *User, appName string) (*Application, error) {
 	appToken, err := generateRandomString(30)
@@ -122,14 +129,12 @@ func (querier *ModelQuerier) SaveApplicationData(
 		}
 		docID = insertRes.GeneratedKeys[0]
 	} else {
-		var docStruct struct {
-			ID string `rethinkdb:"id"`
-		}
-		err = res.One(&docStruct)
+		var doc appDoc
+		err = res.One(&doc)
 		if err != nil {
 			return err
 		}
-		docID = docStruct.ID
+		docID = doc.ID
 	}
 
 	// Generate the nested data query.
@@ -150,9 +155,19 @@ func (querier *ModelQuerier) ReadApplicationData(
 		if err != nil {
 			return nil, err
 		}
-		var data interface{}
-		err = res.All(&data)
-		return data, err
+
+		var docs []appDoc
+		err = res.All(&docs)
+		if err != nil {
+			return nil, err
+		}
+
+		// Convert the documents to the pure user data.
+		docsData := make(map[string]interface{})
+		for _, doc := range docs {
+			docsData[doc.Name] = doc.Data
+		}
+		return docsData, nil
 	}
 
 	res, err := r.Table(app.TableName).Filter(map[string]string{"name": path.TopLevelDocName}).Run(querier.session)
@@ -204,4 +219,9 @@ func (querier *ModelQuerier) ReadApplicationData(
 	// This should never be reached.
 	log.Println("ERROR: This should never be reached.")
 	return nil, nil
+}
+
+// DeleteApplicationData deletes the application's data at the given path.
+func (querier *ModelQuerier) ReadApplicationData(
+	app *Application, path lib.Path) error {
 }
