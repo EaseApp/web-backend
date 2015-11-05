@@ -102,3 +102,68 @@ func TestSaveAndReadApplicationData(t *testing.T) {
 		querier.SaveApplicationData(app, p, nil)
 	}
 }
+
+func TestDeleteApplicationData(t *testing.T) {
+	querier := getModelQuerier(t)
+
+	// Create a user with an application.
+	user, err := NewUser("user", "pass")
+	require.NoError(t, err)
+
+	_, err = querier.Save(user)
+	require.NoError(t, err)
+
+	app, err := querier.CreateApplication(user, "app1")
+	require.NoError(t, err)
+
+	// Create default data to be deleted.
+	path, err := lib.ParsePath("/hello/world")
+	require.NoError(t, err)
+	path2, err := lib.ParsePath("/oh")
+	require.NoError(t, err)
+
+	err = querier.SaveApplicationData(app, path, map[string]interface{}{"yes": "wassuuuup", "multiple": []int{1, 2}})
+	require.NoError(t, err)
+	err = querier.SaveApplicationData(app, path2, 5)
+	require.NoError(t, err)
+
+	testcases := []struct {
+		deletePath       string
+		expectedRootData interface{}
+	}{
+		{
+			"/hello/world/i/dont/exist",
+			map[string]interface{}{"oh": float64(5), "hello": map[string]interface{}{"world": map[string]interface{}{"yes": "wassuuuup", "multiple": []interface{}{float64(1), float64(2)}}}},
+		},
+		{
+			"/oh",
+			map[string]interface{}{"hello": map[string]interface{}{"world": map[string]interface{}{"yes": "wassuuuup", "multiple": []interface{}{float64(1), float64(2)}}}},
+		},
+		{
+			"/hello/world/multiple",
+			map[string]interface{}{"hello": map[string]interface{}{"world": map[string]interface{}{"yes": "wassuuuup"}}},
+		},
+		{
+			"/hello/world",
+			map[string]interface{}{"hello": map[string]interface{}{}},
+		},
+		{
+			"/",
+			map[string]interface{}{},
+		},
+	}
+
+	rootPath, err := lib.ParsePath("/")
+	require.NoError(t, err)
+	for _, testcase := range testcases {
+		path, err = lib.ParsePath(testcase.deletePath)
+		require.NoError(t, err)
+
+		err = querier.DeleteApplicationData(app, path)
+		assert.NoError(t, err)
+
+		data, err := querier.ReadApplicationData(app, rootPath)
+		assert.NoError(t, err)
+		assert.Equal(t, testcase.expectedRootData, data)
+	}
+}
