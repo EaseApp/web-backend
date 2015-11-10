@@ -10,6 +10,7 @@ import (
 
 	"github.com/EaseApp/web-backend/src/app/controllers/helpers"
 	"github.com/EaseApp/web-backend/src/app/models"
+	"github.com/EaseApp/web-backend/src/db"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
@@ -45,16 +46,20 @@ func (s *SyncServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	s.r.ServeHTTP(rw, req)
 }
 
-func createRouting() *mux.Router {
+func createRouting(client *db.Client) *mux.Router {
+	querier := models.NewModelQuerier(client.Session)
+
+	helpers.Init(querier)
+
 	router := mux.NewRouter()
 	router.HandleFunc("/sub", subHandler)
-	router.HandleFunc("/pub/{username}/{app_name}", helpers.RequireAppToken(pubHandler))
+	router.HandleFunc("/pub/{username}/{app_name}", helpers.RequireAppToken(pubHandler)).Methods("POST")
 	return router
 }
 
-func NewSyncServer() *SyncServer {
+func NewSyncServer(client *db.Client) *SyncServer {
 	applications = make(map[string][]Connection)
-	return &SyncServer{r: createRouting()}
+	return &SyncServer{r: createRouting(client)}
 }
 
 // Connection holds connection data

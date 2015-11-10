@@ -325,6 +325,16 @@ func createTestUser(url string, t *testing.T) string {
 	return user.APIToken
 }
 
+func createTestApp(url, apiToken, appName string, t *testing.T) string {
+	resp := sendJSON("", apiToken, url, "/users/applications/"+appName, "POST", t)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	var application models.Application
+	err := json.NewDecoder(resp.Body).Decode(&application)
+	require.NoError(t, err)
+	// log.Println("APPLICATION:", application)
+	return application.AppToken
+}
+
 func sendJSON(jsonInput, token, url, path, method string, t *testing.T) *http.Response {
 	var jsonStr = []byte(jsonInput)
 	req, err := http.NewRequest(method, url+path, bytes.NewBuffer(jsonStr))

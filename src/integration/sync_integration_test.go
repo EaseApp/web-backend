@@ -9,50 +9,60 @@ import (
 	"time"
 
 	"github.com/EaseApp/web-backend/src/sync"
+	r "github.com/dancannon/gorethink"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSocketConnection(t *testing.T) {
-	server := setUpSyncServer(t)
-	apiToken := createTestUser(server.URL, t)
+	syncServer := setUpSyncServer(t)
+	webServer, client := setUpServer(t)
+	apiToken := createTestUser(webServer.URL, t)
+	appToken := createTestApp(webServer.URL, apiToken, "test", t)
 
 	testcases := []struct {
-		subscribeTo  string
-		publishTo    string
-		publishData  string
-		expectedData string
+		subscribeTo                   string
+		publishTo                     string
+		publishData                   string
+		expectedData                  string
+		expectedApplicationStatusCode int
 	}{
 		{
-			// Subscribt to an application, get the relavent data
-			subscribeTo:  "test",
-			publishTo:    "test",
-			publishData:  `{"data":"test"}`,
-			expectedData: `{"data":"test"}`,
+			// Subscribe to an application, get the relavent data
+			subscribeTo:                   "ronswanson_test",
+			publishTo:                     "test",
+			publishData:                   `{"data":"test"}`,
+			expectedData:                  `{"data":"test"}`,
+			expectedApplicationStatusCode: http.StatusOK,
 		},
 		{
-			// Subscribe to one application, make sure you don't get another app's data
-			subscribeTo:  "anApp",
-			publishTo:    "differentApp",
-			publishData:  `{"data":"test"}`,
-			expectedData: "",
+			// Subscribe to one application, shouldn't get data with bad Publish call.
+			subscribeTo:                   "wrongAppKey",
+			publishTo:                     "user_differentApp",
+			publishData:                   `{"data":"test"}`,
+			expectedData:                  "",
+			expectedApplicationStatusCode: http.StatusUnauthorized,
 		},
 	}
 
 	for _, testcase := range testcases {
-		port := strings.Split(server.URL, ":")[2]
-		conn := openConnection("ws://localhost:" + port + "/sub")
+		port := strings.Split(syncServer.URL, ":")[2]
+		conn := openConnection("ws://localhost:" + port + "/sub") // Connect to sync annonymously
 		defer conn.Close()
 
 		sendSocketData(conn, testcase.subscribeTo)
 		assert.Equal(t, testcase.subscribeTo, grabSocketData(conn))
 
-		resp := sendJSON(testcase.publishData, apiToken, server.URL, "/pub/"+testcase.publishTo, "POST", t)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		path := "/pub/ronswanson/" + testcase.publishTo
+		// log.Println(syncServer.URL, path)
+		resp := sendJSON(testcase.publishData, appToken, syncServer.URL, path, "POST", t) // Publish to an app
+		assert.Equal(t, testcase.expectedApplicationStatusCode, resp.StatusCode)
 		actual := grabSocketData(conn)
 		assert.Equal(t, testcase.expectedData, actual)
+
 	}
-	defer server.Close()
+	r.DB("test").TableDrop("ronswanson_" + "test").RunWrite(client.Session)
+	defer syncServer.Close()
 }
 
 func grabSocketData(conn *websocket.Conn) string {
@@ -84,7 +94,8 @@ func openConnection(url string) *websocket.Conn {
 }
 
 func setUpSyncServer(t *testing.T) *httptest.Server {
-	mux := sync.NewSyncServer()
+	client := getDBClient(t)
+	mux := sync.NewSyncServer(client)
 	log.Println("Sync server running...")
 	return httptest.NewServer(mux)
 }
