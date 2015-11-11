@@ -31,10 +31,10 @@ build: dependencies
 	@echo "Building executable main..."
 	@go build -o bin/main main.go
 
+
 $(GOPATH)/bin/gin:
 	@go get github.com/codegangsta/gin
 
 dev-server: dependencies $(GOPATH)/bin/gin
 	@echo "Starting dev server..."
 	@$(GOPATH)/bin/gin
-

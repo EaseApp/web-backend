@@ -104,6 +104,7 @@ func (querier *ModelQuerier) AuthenticateApplication(
 		}
 	}
 	return nil, errors.New("Invalid application token")
+
 }
 
 // SaveApplicationData saves the given data to the application's table at the given path.

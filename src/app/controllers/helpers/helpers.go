@@ -3,8 +3,11 @@ package helpers
 import (
 	"encoding/json"
 	"errors"
+	"github.com/gorilla/websocket"
 	"log"
+
 	"net/http"
+	// "golang.org/x/net/websocket"
 
 	"github.com/EaseApp/web-backend/src/app/models"
 	"github.com/gorilla/mux"
@@ -28,6 +31,19 @@ func SendError(errorCode int, err error, w http.ResponseWriter) {
 	log.Printf("Error: Returning status code %d with error message %s.\n", errorCode, err)
 	resp := errorResponse{ErrCode: errorCode, ErrMessage: err.Error()}
 	json.NewEncoder(w).Encode(resp)
+}
+
+func SendSocketError(err error, conn *websocket.Conn) {
+	resp := errorResponse{ErrCode: 500, ErrMessage: err.Error()}
+	byteArray, err := json.Marshal(resp)
+	if err != nil {
+		log.Println("Error: Cannot marshal JSON.")
+		return
+	}
+	err = conn.WriteMessage(1, byteArray)
+	if err != nil {
+		log.Println("Error: Can't send socket message")
+	}
 }
 
 // RequireAPIToken requires that the given route has a valid APIToken
