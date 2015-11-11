@@ -1,8 +1,10 @@
 package sync
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -80,6 +82,7 @@ func subHandler(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		friendlyErr := errors.New("Reading application error.")
 		helpers.SendSocketError(friendlyErr, ws)
+		return
 	}
 
 	name := string(p)
@@ -94,15 +97,27 @@ func subHandler(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Println(err)
+		return
 	}
 }
 
 func publish(application string, data []byte) {
 	log.Println("Sync is publishing to: " + application)
 	for _, element := range applications[application] {
-		err := element.Conn.WriteMessage(1, data)
+		// err := element.Conn.WriteMessage(1, data)
+
+		w, err := element.Conn.NextWriter(1)
 		if err != nil {
 			log.Println(err)
+			return
+		}
+		if _, err := io.Copy(w, bytes.NewReader(data)); err != nil {
+			log.Println(err)
+			return
+		}
+		if err := w.Close(); err != nil {
+			log.Println(err)
+			return
 		}
 	}
 }
@@ -117,16 +132,12 @@ func decodeData(req *http.Request) ([]byte, error) {
 
 // pubHandler triggers a publishing event
 func pubHandler(w http.ResponseWriter, req *http.Request, app *models.Application) {
-	// vars := mux.Vars(req)
-	// user := vars["username"]
-	// application := vars["applicationName"]
-
 	data, err := decodeData(req)
 	if err != nil {
 		log.Println(err)
 	}
 
-	publish(app.TableName, data)
+	go publish(app.TableName, data)
 	fmt.Fprintf(w, "You just published!")
 
 }
