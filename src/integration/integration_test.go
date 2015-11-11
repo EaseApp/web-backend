@@ -324,8 +324,7 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 		appToken, server.URL, "/data/ronswanson/bestappevar", "POST", t)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	resp = sendJSON(`{"path":"/hello"}`,
-		appToken, server.URL, "/data/ronswanson/bestappevar", "GET", t)
+	resp = sendJSON("", appToken, server.URL, "/data/ronswanson/bestappevar?path=/hello", "GET", t)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var data1 interface{}
@@ -337,8 +336,7 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 		appToken, server.URL, "/data/ronswanson/bestappevar", "DELETE", t)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	resp = sendJSON(`{"path":"/hello"}`,
-		appToken, server.URL, "/data/ronswanson/bestappevar", "GET", t)
+	resp = sendJSON("", appToken, server.URL, "/data/ronswanson/bestappevar?path=/hello", "GET", t)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var data2 interface{}
@@ -347,8 +345,7 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 	assert.Equal(t, interface{}(map[string]interface{}{"nested": "objects"}), data2)
 
 	// Verify data can't be accessed with a bad token.
-	resp = sendJSON(`{"path":"/hello"}`,
-		"iamtoken", server.URL, "/data/ronswanson/bestappevar", "GET", t)
+	resp = sendJSON("", "iamtoken", server.URL, "/data/ronswanson/bestappevar?path=/hello", "GET", t)
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
 	var data3 interface{}

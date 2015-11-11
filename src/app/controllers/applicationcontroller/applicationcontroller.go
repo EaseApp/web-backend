@@ -89,12 +89,13 @@ func SaveApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *m
 
 // ReadApplicationDataHandler handles reading app data.
 func ReadApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *models.Application) {
-	params, err := parseAppDataParams(w, req)
+	path, err := lib.ParsePath(req.URL.Query().Get("path"))
 	if err != nil {
+		helpers.SendError(http.StatusBadRequest, err, w)
 		return
 	}
 
-	data, err := querier.ReadApplicationData(app, params.Path)
+	data, err := querier.ReadApplicationData(app, path)
 	if err != nil {
 		friendlyErr := errors.New("Failed to read application data")
 		log.Println(friendlyErr, ": ", err)
