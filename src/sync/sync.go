@@ -99,12 +99,10 @@ func subHandler(w http.ResponseWriter, req *http.Request) {
 
 func publish(application string, data []byte) {
 	log.Println("Sync is publishing to: " + application)
-	if len(applications[application]) > 0 {
-		for _, element := range applications[application] {
-			err := element.Conn.WriteMessage(1, data)
-			if err != nil {
-				log.Println(err)
-			}
+	for _, element := range applications[application] {
+		err := element.Conn.WriteMessage(1, data)
+		if err != nil {
+			log.Println(err)
 		}
 	}
 }
