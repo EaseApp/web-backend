@@ -1,10 +1,12 @@
 package applicationcontroller
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/EaseApp/web-backend/src/app/controllers/helpers"
 	"github.com/EaseApp/web-backend/src/app/models"
@@ -83,8 +85,30 @@ func SaveApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *m
 		helpers.SendError(http.StatusInternalServerError, friendlyErr, w)
 		return
 	}
+	go func() {
+		applicationNames := strings.Split(app.TableName, "_")
+		resp := sendJSON(params, app.AppToken, "http://localhost:8000", "/pub/"+applicationNames[0]+"/"+app.Name, "POST")
+		log.Println("RESPONSE:", resp)
+	}()
 
 	json.NewEncoder(w).Encode(successResponse)
+}
+
+func sendJSON(params appDataReqParams, token, url, path, method string) *http.Response {
+	buff := bytes.NewBuffer(nil)
+	json.NewEncoder(buff).Encode(params)
+
+	req, err := http.NewRequest(method, url+path, buff)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return resp
 }
 
 // ReadApplicationDataHandler handles reading app data.
