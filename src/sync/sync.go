@@ -98,6 +98,7 @@ func subHandler(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
+	log.Println("PARAMS:", params)
 
 	if helpers.IsValidAppToken(params.Username, params.Application, params.Authorization) {
 		appName := helpers.GetAppName(params.Username, params.Application)
