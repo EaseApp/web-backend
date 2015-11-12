@@ -86,7 +86,7 @@ func sendSocketData(conn *websocket.Conn, data string) error {
 }
 
 func openConnection(url string) *websocket.Conn {
-	log.Println("URL: ", url)
+	// log.Println("URL: ", url)
 	var DefaultDialer = &websocket.Dialer{
 		Proxy: http.ProxyFromEnvironment,
 	}
