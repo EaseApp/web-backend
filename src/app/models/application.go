@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/EaseApp/web-backend/src/lib"
 	r "github.com/dancannon/gorethink"
@@ -14,6 +15,12 @@ type Application struct {
 	Name      string `gorethink:"name" json:"name"`
 	AppToken  string `gorethink:"app_token" json:"app_token"`
 	TableName string `gorethink:"table_name" json:"-"`
+}
+
+// Username returns the username that owns the app.
+func (app *Application) Username() string {
+	names := strings.Split(app.TableName, "_")
+	return names[0]
 }
 
 // appDoc is the type of each document in an application table.

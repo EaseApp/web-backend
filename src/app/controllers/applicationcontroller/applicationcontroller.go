@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/EaseApp/web-backend/src/app/controllers/helpers"
 	"github.com/EaseApp/web-backend/src/app/models"
@@ -93,34 +93,10 @@ func SaveApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *m
 		helpers.SendError(http.StatusInternalServerError, friendlyErr, w)
 		return
 	}
-	go func() {
-		applicationNames := strings.Split(app.TableName, "_")
-		url := "http://localhost:8000"
-		if testingOnlySyncServerURL != "" {
-			url = testingOnlySyncServerURL
-		}
-		resp := sendJSON(params, app.AppToken, url, "/pub/"+applicationNames[0]+"/"+app.Name, "POST")
-		log.Println("RESPONSE:", resp)
-	}()
+
+	go sendPublishEvent(app, "SAVE", params)
 
 	json.NewEncoder(w).Encode(successResponse)
-}
-
-func sendJSON(params appDataReqParams, token, url, path, method string) *http.Response {
-	buff := bytes.NewBuffer(nil)
-	json.NewEncoder(buff).Encode(params)
-
-	req, err := http.NewRequest(method, url+path, buff)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", token)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println(err)
-	}
-
-	return resp
 }
 
 // ReadApplicationDataHandler handles reading app data.
@@ -157,7 +133,42 @@ func DeleteApplicationDataHandler(w http.ResponseWriter, req *http.Request, app 
 		return
 	}
 
+	go sendPublishEvent(app, "DELETE", params)
+
 	json.NewEncoder(w).Encode(successResponse)
+}
+
+// sendPublishEvent sends a publish event to the sync server.
+func sendPublishEvent(app *models.Application, action string, params appDataReqParams) *http.Response {
+	url := "http://localhost:8000"
+	if testingOnlySyncServerURL != "" {
+		url = testingOnlySyncServerURL
+	}
+
+	buff := bytes.NewBuffer(nil)
+	json.NewEncoder(buff).Encode(map[string]interface{}{
+		"path":   params.Path,
+		"data":   params.Data,
+		"action": action,
+	})
+
+	resp := sendJSON(buff, app.AppToken, url, "/pub/"+app.Username()+"/"+app.Name, "POST")
+	log.Println("Publish response: ", resp)
+	return resp
+}
+
+func sendJSON(data io.Reader, token, url, path, method string) *http.Response {
+	req, err := http.NewRequest(method, url+path, data)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return resp
 }
 
 // parseAppDataParams parses the given app data params and sends an error if they're invalid.
