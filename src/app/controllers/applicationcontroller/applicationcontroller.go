@@ -96,7 +96,7 @@ func SaveApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *m
 	}
 	go func() {
 		applicationNames := strings.Split(app.TableName, "_")
-		resp := sendJSON(params, app.AppToken, "http://localhost:8000", "/pub/"+applicationNames[0]+"/"+app.Name, "POST")
+		resp := sendJSONWithAppData(params, app.AppToken, "http://localhost:8000", "/pub/"+applicationNames[0]+"/"+app.Name, "POST")
 		log.Println("RESPONSE:", resp)
 	}()
 
@@ -105,7 +105,7 @@ func SaveApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *m
 	json.NewEncoder(w).Encode(successResponse)
 }
 
-func sendJSON(params appDataReqParams, token, url, path, method string) *http.Response {
+func sendJSONWithAppData(params appDataReqParams, token, url, path, method string) *http.Response {
 	buff := bytes.NewBuffer(nil)
 	json.NewEncoder(buff).Encode(params)
 
