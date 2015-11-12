@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/EaseApp/web-backend/src/app/controllers/applicationcontroller"
 	"github.com/EaseApp/web-backend/src/app/models"
 	"github.com/EaseApp/web-backend/src/db"
 	"github.com/EaseApp/web-backend/src/server"
@@ -316,7 +317,11 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 	// tested well in models/application_test.
 
 	server, client := setUpServer(t)
+	syncServer := setUpSyncServer(t)
 	defer server.Close()
+	defer syncServer.Close()
+
+	applicationcontroller.TestingOnly_SetSyncServerURL(syncServer.URL)
 
 	appToken := createTestApplication(server.URL, t)
 
@@ -324,8 +329,7 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 		appToken, server.URL, "/data/ronswanson/bestappevar", "POST", t)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	resp = sendJSON(`{"path":"/hello"}`,
-		appToken, server.URL, "/data/ronswanson/bestappevar", "GET", t)
+	resp = sendJSON("", appToken, server.URL, "/data/ronswanson/bestappevar?path=/hello", "GET", t)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var data1 interface{}
@@ -337,8 +341,7 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 		appToken, server.URL, "/data/ronswanson/bestappevar", "DELETE", t)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	resp = sendJSON(`{"path":"/hello"}`,
-		appToken, server.URL, "/data/ronswanson/bestappevar", "GET", t)
+	resp = sendJSON("", appToken, server.URL, "/data/ronswanson/bestappevar?path=/hello", "GET", t)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var data2 interface{}
@@ -347,8 +350,7 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 	assert.Equal(t, interface{}(map[string]interface{}{"nested": "objects"}), data2)
 
 	// Verify data can't be accessed with a bad token.
-	resp = sendJSON(`{"path":"/hello"}`,
-		"iamtoken", server.URL, "/data/ronswanson/bestappevar", "GET", t)
+	resp = sendJSON("", "iamtoken", server.URL, "/data/ronswanson/bestappevar?path=/hello", "GET", t)
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
 	var data3 interface{}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -21,6 +22,14 @@ var querier *models.ModelQuerier
 // to have perfect dependency injection practices.
 func Init(querierX *models.ModelQuerier) {
 	querier = querierX
+}
+
+var testingOnlySyncServerURL string
+
+// TestingOnly_SetSyncServerURL sets the sync server URL for use in the tests.
+// This is because we can't get the URL ahead of time with httptest.
+func TestingOnly_SetSyncServerURL(syncServerURL string) {
+	testingOnlySyncServerURL = syncServerURL
 }
 
 // CreateApplicationHandler handles creating applications for the authenticated user.
@@ -91,6 +100,8 @@ func SaveApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *m
 		log.Println("RESPONSE:", resp)
 	}()
 
+	go sendPublishEvent(app, "SAVE", params)
+
 	json.NewEncoder(w).Encode(successResponse)
 }
 
@@ -113,12 +124,13 @@ func sendJSON(params appDataReqParams, token, url, path, method string) *http.Re
 
 // ReadApplicationDataHandler handles reading app data.
 func ReadApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *models.Application) {
-	params, err := parseAppDataParams(w, req)
+	path, err := lib.ParsePath(req.URL.Query().Get("path"))
 	if err != nil {
+		helpers.SendError(http.StatusBadRequest, err, w)
 		return
 	}
 
-	data, err := querier.ReadApplicationData(app, params.Path)
+	data, err := querier.ReadApplicationData(app, path)
 	if err != nil {
 		friendlyErr := errors.New("Failed to read application data")
 		log.Println(friendlyErr, ": ", err)
@@ -144,7 +156,42 @@ func DeleteApplicationDataHandler(w http.ResponseWriter, req *http.Request, app 
 		return
 	}
 
+	go sendPublishEvent(app, "DELETE", params)
+
 	json.NewEncoder(w).Encode(successResponse)
+}
+
+// sendPublishEvent sends a publish event to the sync server.
+func sendPublishEvent(app *models.Application, action string, params appDataReqParams) *http.Response {
+	url := "http://localhost:8000"
+	if testingOnlySyncServerURL != "" {
+		url = testingOnlySyncServerURL
+	}
+
+	buff := bytes.NewBuffer(nil)
+	json.NewEncoder(buff).Encode(map[string]interface{}{
+		"path":   params.Path,
+		"data":   params.Data,
+		"action": action,
+	})
+
+	resp := sendJSON(buff, app.AppToken, url, "/pub/"+app.Username()+"/"+app.Name, "POST")
+	log.Println("Publish response: ", resp)
+	return resp
+}
+
+func sendJSON(data io.Reader, token, url, path, method string) *http.Response {
+	req, err := http.NewRequest(method, url+path, data)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return resp
 }
 
 // parseAppDataParams parses the given app data params and sends an error if they're invalid.
