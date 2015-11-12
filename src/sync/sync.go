@@ -2,6 +2,7 @@ package sync
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -64,6 +65,12 @@ func NewSyncServer(client *db.Client) *SyncServer {
 	return &SyncServer{r: createRouting(client)}
 }
 
+type applicationParams struct {
+	Username      string
+	Application   string
+	Authorization string
+}
+
 // Connection holds connection data
 type Connection struct {
 	Conn *websocket.Conn
@@ -85,14 +92,28 @@ func subHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	name := string(p)
-
-	applications[name] = append(applications[name], Connection{ws})
-	log.Println(applications)
-
-	if err = ws.WriteMessage(1, p); err != nil {
+	var params applicationParams
+	err = json.NewDecoder(bytes.NewReader(p)).Decode(&params)
+	if err != nil {
 		log.Println(err)
 		return
+	}
+
+	if helpers.IsValidAppToken(params.Username, params.Application, params.Authorization) {
+		appName := helpers.GetAppName(params.Username, params.Application)
+		applications[appName] = append(applications[appName], Connection{ws})
+		log.Println(applications)
+		success := `{"status": "success"}`
+		if err = ws.WriteMessage(1, []byte(success)); err != nil {
+			log.Println(err)
+			return
+		}
+	} else {
+		failed := `{"status": "failed"}`
+		if err = ws.WriteMessage(1, []byte(failed)); err != nil {
+			log.Println(err)
+			return
+		}
 	}
 
 	if err != nil {
@@ -124,9 +145,6 @@ func publish(application string, data []byte) {
 
 func decodeData(req *http.Request) ([]byte, error) {
 	bodyBytes, err := ioutil.ReadAll(req.Body)
-
-	// var data JsonData
-	// err := json.NewDecoder(req.Body).Decode(&data)
 	return bodyBytes, err
 }
 

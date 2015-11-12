@@ -1,11 +1,11 @@
 package main
 
 import (
-
 	"log"
-	"github.com/codegangsta/negroni"
-	"github.com/EaseApp/web-backend/src/sync"
+
 	"github.com/EaseApp/web-backend/src/db"
+	"github.com/EaseApp/web-backend/src/sync"
+	"github.com/codegangsta/negroni"
 )
 
 // This function runs the main webserver for the sync service.

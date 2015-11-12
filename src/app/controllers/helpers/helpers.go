@@ -3,8 +3,9 @@ package helpers
 import (
 	"encoding/json"
 	"errors"
-	"github.com/gorilla/websocket"
 	"log"
+
+	"github.com/gorilla/websocket"
 
 	"net/http"
 	// "golang.org/x/net/websocket"
@@ -23,6 +24,10 @@ type errorResponse struct {
 // Init sets up the helpers global ModelQuerier.
 func Init(q *models.ModelQuerier) {
 	querier = q
+}
+
+func GetAppName(username, application string) string {
+	return username + "_" + application
 }
 
 // SendError sends and logs the given error.
@@ -65,6 +70,15 @@ func RequireAPIToken(
 			return
 		}
 		handler(w, req, user)
+	}
+}
+
+func IsValidAppToken(username, appName, appToken string) bool {
+	_, err := querier.AuthenticateApplication(username, appName, appToken)
+	if err != nil {
+		return false
+	} else {
+		return true
 	}
 }
 
