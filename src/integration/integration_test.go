@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/EaseApp/web-backend/src/app/controllers/applicationcontroller"
 	"github.com/EaseApp/web-backend/src/app/models"
 	"github.com/EaseApp/web-backend/src/db"
 	"github.com/EaseApp/web-backend/src/server"
@@ -316,7 +317,11 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 	// tested well in models/application_test.
 
 	server, client := setUpServer(t)
+	syncServer := setUpSyncServer(t)
 	defer server.Close()
+	defer syncServer.Close()
+
+	applicationcontroller.TestingOnly_SetSyncServerURL(syncServer.URL)
 
 	appToken := createTestApplication(server.URL, t)
 

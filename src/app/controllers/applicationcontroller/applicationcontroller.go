@@ -23,6 +23,14 @@ func Init(querierX *models.ModelQuerier) {
 	querier = querierX
 }
 
+var testingOnlySyncServerURL string
+
+// TestingOnly_SetSyncServerURL sets the sync server URL for use in the tests.
+// This is because we can't get the URL ahead of time with httptest.
+func TestingOnly_SetSyncServerURL(syncServerURL string) {
+	testingOnlySyncServerURL = syncServerURL
+}
+
 // CreateApplicationHandler handles creating applications for the authenticated user.
 func CreateApplicationHandler(w http.ResponseWriter, req *http.Request, user *models.User) {
 	vars := mux.Vars(req)
@@ -87,7 +95,11 @@ func SaveApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *m
 	}
 	go func() {
 		applicationNames := strings.Split(app.TableName, "_")
-		resp := sendJSON(params, app.AppToken, "http://localhost:8000", "/pub/"+applicationNames[0]+"/"+app.Name, "POST")
+		url := "http://localhost:8000"
+		if testingOnlySyncServerURL != "" {
+			url = testingOnlySyncServerURL
+		}
+		resp := sendJSON(params, app.AppToken, url, "/pub/"+applicationNames[0]+"/"+app.Name, "POST")
 		log.Println("RESPONSE:", resp)
 	}()
 
