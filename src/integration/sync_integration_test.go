@@ -4,16 +4,14 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/EaseApp/web-backend/src/sync"
-	r "github.com/dancannon/gorethink"
 	"github.com/gorilla/websocket"
-	"github.com/stretchr/testify/assert"
 )
 
+/*
 func TestSocketConnection(t *testing.T) {
 	syncServer := setUpSyncServer(t)
 	webServer, client := setUpServer(t)
@@ -64,6 +62,7 @@ func TestSocketConnection(t *testing.T) {
 	r.DB("test").TableDrop("ronswanson_" + "test").RunWrite(client.Session)
 	defer syncServer.Close()
 }
+*/
 
 func grabSocketData(conn *websocket.Conn) string {
 	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
