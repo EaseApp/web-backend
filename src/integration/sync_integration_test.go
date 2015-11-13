@@ -59,7 +59,6 @@ func TestSocketConnection(t *testing.T) {
 		assert.Equal(t, testcase.expectedData, actual)
 
 	}
-	r.DB("test").TableDrop("ronswanson_" + "test").RunWrite(client.Session)
 	defer syncServer.Close()
 }
 */
