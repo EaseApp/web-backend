@@ -2,11 +2,12 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"log"
+	"strings"
 
 	"github.com/EaseApp/web-backend/src/lib"
 	r "github.com/dancannon/gorethink"
+	"github.com/satori/go.uuid"
 )
 
 // Application holds attributes for an Ease user's applications.
@@ -31,7 +32,8 @@ func newApplication(user *User, appName string) (*Application, error) {
 		log.Println(err)
 		return nil, err
 	}
-	tableName := fmt.Sprintf("%v_%v", user.Username, appName)
+	// Get a UUID for the table name.
+	tableName := strings.Replace(uuid.NewV4().String(), "-", "_", -1)
 	return &Application{
 		Name:      appName,
 		AppToken:  appToken,
