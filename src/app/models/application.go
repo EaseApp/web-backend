@@ -17,12 +17,6 @@ type Application struct {
 	TableName string `gorethink:"table_name" json:"table_name"`
 }
 
-// Username returns the username that owns the app.
-func (app *Application) Username() string {
-	names := strings.Split(app.TableName, "_")
-	return names[0]
-}
-
 // appDoc is the type of each document in an application table.
 type appDoc struct {
 	ID   string      `gorethink:"id"`
