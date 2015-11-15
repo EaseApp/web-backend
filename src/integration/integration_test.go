@@ -3,6 +3,7 @@ package integration
 import (
 	"bytes"
 	"encoding/json"
+	// "log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -387,7 +388,6 @@ func createTestApp(url, apiToken, appName string, t *testing.T) models.Applicati
 	var application models.Application
 	err := json.NewDecoder(resp.Body).Decode(&application)
 	require.NoError(t, err)
-	// log.Println("APPLICATION:", application)
 	return application
 }
 

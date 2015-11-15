@@ -70,9 +70,10 @@ func DeleteApplicationHandler(w http.ResponseWriter, req *http.Request, user *mo
 
 // appDataReqParams holds the params needed for the data handlers below.
 type appDataReqParams struct {
-	PathStr string      `json:"path"`
-	Data    interface{} `json:"data"`
-	Path    lib.Path    `json:"-"`
+	PathStr  string      `json:"path"`
+	Data     interface{} `json:"data"`
+	Path     lib.Path    `json:"-"`
+	Username string      `json:"username"`
 }
 
 var successResponse = struct {
@@ -152,7 +153,8 @@ func sendPublishEvent(app *models.Application, action string, params appDataReqP
 		"action": action,
 	})
 
-	resp := sendJSON(buff, app.AppToken, url, "/pub/"+app.Username()+"/"+app.Name, "POST")
+	log.Println("Sending Publish Event:", params.Username)
+	resp := sendJSON(buff, app.AppToken, url, "/pub/"+params.Username+"/"+app.TableName, "POST")
 	log.Println("Publish response: ", resp)
 	return resp
 }
@@ -188,6 +190,10 @@ func parseAppDataParams(w http.ResponseWriter, req *http.Request) (appDataReqPar
 		helpers.SendError(http.StatusBadRequest, friendlyErr, w)
 		return params, err
 	}
+
+	vars := mux.Vars(req)
+	username := vars["username"]
+	params.Username = username
 
 	return params, nil
 }

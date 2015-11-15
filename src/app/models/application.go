@@ -14,7 +14,7 @@ import (
 type Application struct {
 	Name      string `gorethink:"name" json:"name"`
 	AppToken  string `gorethink:"app_token" json:"app_token"`
-	TableName string `gorethink:"table_name" json:"-"`
+	TableName string `gorethink:"table_name" json:"table_name"`
 }
 
 // Username returns the username that owns the app.
@@ -107,12 +107,28 @@ func (querier *ModelQuerier) AuthenticateApplication(
 	}
 
 	for _, app := range user.Applications {
-		if app.Name == appName && app.AppToken == appToken {
+		if (app.Name == appName || app.TableName == appName) && app.AppToken == appToken {
 			return &app, nil
 		}
 	}
 	return nil, errors.New("Invalid application token")
+}
 
+// AuthenticateApplicationWithTableName checks that the given username, table name, and
+// app token are valid, and if so returns the given application.
+func (querier *ModelQuerier) AuthenticateApplicationWithTableName(
+	username, tableName, appToken string) (*Application, error) {
+	user := querier.FindUser(username)
+	if user == nil {
+		return nil, errors.New("Couldn't find user with that name")
+	}
+
+	for _, app := range user.Applications {
+		if (app.Name == tableName || app.TableName == tableName) && app.AppToken == appToken {
+			return &app, nil
+		}
+	}
+	return nil, errors.New("Invalid application token")
 }
 
 // SaveApplicationData saves the given data to the application's table at the given path.

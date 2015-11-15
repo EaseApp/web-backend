@@ -76,8 +76,8 @@ func RequireAPIToken(
 }
 
 // IsValidAppToken checks whether the application token provides, is valid for the user and app.
-func IsValidAppToken(username, appName, appToken string) bool {
-	_, err := querier.AuthenticateApplication(username, appName, appToken)
+func IsValidAppToken(username, tableName, appToken string) bool {
+	_, err := querier.AuthenticateApplicationWithTableName(username, tableName, appToken)
 	if err != nil {
 		return false
 	}
