@@ -309,13 +309,13 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 	// This test isn't as extensive as some of the other ones because these components are already
 	// tested well in models/application_test.
 
-	server, client := setUpServer(t)
+	server := setUpServer(t)
 	syncServer := setUpSyncServer(t)
 
 	defer server.Close()
 	defer syncServer.Close()
 
-	applicationcontroller.TestingOnly_SetSyncServerURL(syncServer.URL)
+	applicationcontroller.TestingOnlySetSyncServerURL(syncServer.URL)
 
 	appToken := createTestApplication(server.URL, t)
 

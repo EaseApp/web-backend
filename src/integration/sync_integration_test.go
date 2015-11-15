@@ -99,7 +99,7 @@ func openConnection(url string) *websocket.Conn {
 
 func setUpSyncServer(t *testing.T) *httptest.Server {
 	client := getDBClient(t)
-	mux := sync.NewSyncServer(client)
+	mux := sync.NewServer(client)
 	log.Println("Sync server running...")
 	return httptest.NewServer(mux)
 }

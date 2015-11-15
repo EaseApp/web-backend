@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/EaseApp/web-backend/src/app/controllers/helpers"
 	"github.com/EaseApp/web-backend/src/app/models"
@@ -26,9 +25,9 @@ func Init(querierX *models.ModelQuerier) {
 
 var testingOnlySyncServerURL string
 
-// TestingOnly_SetSyncServerURL sets the sync server URL for use in the tests.
+// TestingOnlySetSyncServerURL sets the sync server URL for use in the tests.
 // This is because we can't get the URL ahead of time with httptest.
-func TestingOnly_SetSyncServerURL(syncServerURL string) {
+func TestingOnlySetSyncServerURL(syncServerURL string) {
 	testingOnlySyncServerURL = syncServerURL
 }
 
@@ -94,32 +93,10 @@ func SaveApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *m
 		helpers.SendError(http.StatusInternalServerError, friendlyErr, w)
 		return
 	}
-	go func() {
-		applicationNames := strings.Split(app.TableName, "_")
-		resp := sendJSONWithAppData(params, app.AppToken, "http://localhost:8000", "/pub/"+applicationNames[0]+"/"+app.Name, "POST")
-		log.Println("RESPONSE:", resp)
-	}()
 
 	go sendPublishEvent(app, "SAVE", params)
 
 	json.NewEncoder(w).Encode(successResponse)
-}
-
-func sendJSONWithAppData(params appDataReqParams, token, url, path, method string) *http.Response {
-	buff := bytes.NewBuffer(nil)
-	json.NewEncoder(buff).Encode(params)
-
-	req, err := http.NewRequest(method, url+path, buff)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", token)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println(err)
-	}
-
-	return resp
 }
 
 // ReadApplicationDataHandler handles reading app data.

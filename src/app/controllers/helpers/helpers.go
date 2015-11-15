@@ -26,6 +26,7 @@ func Init(q *models.ModelQuerier) {
 	querier = q
 }
 
+// GetAppName standardizes the naming convention for TableName
 func GetAppName(username, application string) string {
 	return username + "_" + application
 }
@@ -38,6 +39,7 @@ func SendError(errorCode int, err error, w http.ResponseWriter) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// SendSocketError standardizes the errors to be sent via socket connections
 func SendSocketError(err error, conn *websocket.Conn) {
 	resp := errorResponse{ErrCode: 500, ErrMessage: err.Error()}
 	byteArray, err := json.Marshal(resp)
@@ -73,13 +75,13 @@ func RequireAPIToken(
 	}
 }
 
+// IsValidAppToken checks whether the application token provides, is valid for the user and app.
 func IsValidAppToken(username, appName, appToken string) bool {
 	_, err := querier.AuthenticateApplication(username, appName, appToken)
 	if err != nil {
 		return false
-	} else {
-		return true
 	}
+	return true
 }
 
 // RequireAppToken requires that the given route has a valid AppToken.

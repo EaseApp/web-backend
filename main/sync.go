@@ -21,7 +21,7 @@ func main() {
 	}
 	defer client.Close()
 
-	router := sync.NewSyncServer(client)
+	router := sync.NewServer(client)
 
 	// Make web server
 	n := negroni.Classic()
