@@ -74,12 +74,12 @@ func TestDeleteApplication(t *testing.T) {
 	server := setUpServer(t)
 	defer server.Close()
 
-	apiToken := createTestUser(server.URL, t)
+	testUser := createTestUser(server.URL, t)
 
 	// Create two applications.
-	resp := sendJSON("", apiToken, server.URL, "/users/applications/bestappevar", "POST", t)
+	resp := sendJSON("", testUser.APIToken, server.URL, "/users/applications/bestappevar", "POST", t)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
-	resp = sendJSON("", apiToken, server.URL, "/users/applications/lol", "POST", t)
+	resp = sendJSON("", testUser.APIToken, server.URL, "/users/applications/lol", "POST", t)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	testcases := []struct {
@@ -99,7 +99,7 @@ func TestDeleteApplication(t *testing.T) {
 		},
 		// Invalid app name.
 		{
-			token:         apiToken,
+			token:         testUser.APIToken,
 			appToDelete:   "idontexist",
 			appNames:      nil,
 			expectedCode:  http.StatusInternalServerError,
@@ -107,7 +107,7 @@ func TestDeleteApplication(t *testing.T) {
 		},
 		// Valid token and the app deleted.
 		{
-			token:         apiToken,
+			token:         testUser.APIToken,
 			appToDelete:   "bestappevar",
 			appNames:      []string{"lol"},
 			expectedCode:  http.StatusOK,
@@ -115,7 +115,7 @@ func TestDeleteApplication(t *testing.T) {
 		},
 		// Valid token and both apps deleted.
 		{
-			token:         apiToken,
+			token:         testUser.APIToken,
 			appToDelete:   "lol",
 			appNames:      []string{},
 			expectedCode:  http.StatusOK,
@@ -148,12 +148,12 @@ func TestListApplications(t *testing.T) {
 	server := setUpServer(t)
 	defer server.Close()
 
-	apiToken := createTestUser(server.URL, t)
+	testUser := createTestUser(server.URL, t)
 
 	// Create two applications.
-	resp := sendJSON("", apiToken, server.URL, "/users/applications/bestappevar", "POST", t)
+	resp := sendJSON("", testUser.APIToken, server.URL, "/users/applications/bestappevar", "POST", t)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
-	resp = sendJSON("", apiToken, server.URL, "/users/applications/lol", "POST", t)
+	resp = sendJSON("", testUser.APIToken, server.URL, "/users/applications/lol", "POST", t)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	testcases := []struct {
@@ -171,7 +171,7 @@ func TestListApplications(t *testing.T) {
 		},
 		// Valid token and two apps returned.
 		{
-			token:         apiToken,
+			token:         testUser.APIToken,
 			appNames:      []string{"bestappevar", "lol"},
 			expectedCode:  http.StatusOK,
 			expectedError: "",
@@ -203,7 +203,7 @@ func TestCreateApplication(t *testing.T) {
 	server := setUpServer(t)
 	defer server.Close()
 
-	apiToken := createTestUser(server.URL, t)
+	testUser := createTestUser(server.URL, t)
 
 	testcases := []struct {
 		token         string
@@ -220,7 +220,7 @@ func TestCreateApplication(t *testing.T) {
 		},
 		// Valid token and created app.
 		{
-			token:         apiToken,
+			token:         testUser.APIToken,
 			appName:       "bestappevar",
 			expectedCode:  http.StatusOK,
 			expectedError: "",
@@ -250,7 +250,7 @@ func TestSignIn(t *testing.T) {
 	server := setUpServer(t)
 	defer server.Close()
 
-	userAPIToken := createTestUser(server.URL, t)
+	testUser := createTestUser(server.URL, t)
 
 	testcases := []struct {
 		input            string
@@ -265,7 +265,7 @@ func TestSignIn(t *testing.T) {
 			expectedCode:     http.StatusOK,
 			expectedError:    "",
 			expectedUsername: "ronswanson",
-			expectedAPIToken: userAPIToken,
+			expectedAPIToken: testUser.APIToken,
 		},
 		// Invalid username.
 		{
@@ -359,9 +359,9 @@ var testAppName = "bestappevar"
 
 // createTestApplication creates a test application (under a new user) and returns its app token.
 func createTestApplication(url string, t *testing.T) string {
-	apiToken := createTestUser(url, t)
+	testUser := createTestUser(url, t)
 
-	resp := sendJSON("", apiToken, url, "/users/applications/bestappevar", "POST", t)
+	resp := sendJSON("", testUser.APIToken, url, "/users/applications/bestappevar", "POST", t)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var app models.Application
@@ -371,24 +371,24 @@ func createTestApplication(url string, t *testing.T) string {
 }
 
 // createTestUser creates a test user and returns its api token.
-func createTestUser(url string, t *testing.T) string {
+func createTestUser(url string, t *testing.T) models.User {
 	resp := sendJSON(`{"username":"ronswanson","password":"meat"}`,
 		"", url, "/users/sign_up", "POST", t)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var user models.User
 	err := json.NewDecoder(resp.Body).Decode(&user)
 	require.NoError(t, err)
-	return user.APIToken
+	return user
 }
 
-func createTestApp(url, apiToken, appName string, t *testing.T) string {
+func createTestApp(url, apiToken, appName string, t *testing.T) models.Application {
 	resp := sendJSON("", apiToken, url, "/users/applications/"+appName, "POST", t)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var application models.Application
 	err := json.NewDecoder(resp.Body).Decode(&application)
 	require.NoError(t, err)
 	// log.Println("APPLICATION:", application)
-	return application.AppToken
+	return application
 }
 
 func sendJSON(jsonInput, token, url, path, method string, t *testing.T) *http.Response {

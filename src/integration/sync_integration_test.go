@@ -4,19 +4,20 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/EaseApp/web-backend/src/sync"
 	"github.com/gorilla/websocket"
+	"github.com/stretchr/testify/assert"
 )
 
-/*
 func TestSocketConnection(t *testing.T) {
 	syncServer := setUpSyncServer(t)
-	webServer, client := setUpServer(t)
-	apiToken := createTestUser(webServer.URL, t)
-	appToken := createTestApp(webServer.URL, apiToken, "test", t)
+	webServer := setUpServer(t)
+	testUser := createTestUser(webServer.URL, t)
+	testApplication := createTestApp(webServer.URL, testUser.APIToken, "test", t)
 
 	testcases := []struct {
 		subscribeTo                   string
@@ -30,7 +31,7 @@ func TestSocketConnection(t *testing.T) {
 		{
 			// Subscribe to an application, get the relavent data
 			subscribeTo:                   "ronswanson_test",
-			firstSocketMessage:            `{"username": "ronswanson", "application": "test", "authorization": "` + appToken + `"}`,
+			firstSocketMessage:            `{"username": "ronswanson", "application": "test", "authorization": "` + testApplication.AppToken + `"}`,
 			firstSocketResponse:           `{"status": "success"}`,
 			publishTo:                     "test",
 			publishData:                   `{"data": "test"}`,
@@ -59,7 +60,7 @@ func TestSocketConnection(t *testing.T) {
 
 		path := "/pub/ronswanson/" + testcase.publishTo
 		// log.Println(syncServer.URL, path)
-		resp := sendJSON(testcase.publishData, appToken, syncServer.URL, path, "POST", t) // Publish to an app
+		resp := sendJSON(testcase.publishData, testApplication.AppToken, syncServer.URL, path, "POST", t) // Publish to an app
 		assert.Equal(t, testcase.expectedApplicationStatusCode, resp.StatusCode)
 		actual := grabSocketData(conn)
 		assert.Equal(t, testcase.expectedData, actual)
@@ -67,7 +68,6 @@ func TestSocketConnection(t *testing.T) {
 	}
 	defer syncServer.Close()
 }
-*/
 
 func grabSocketData(conn *websocket.Conn) string {
 	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
