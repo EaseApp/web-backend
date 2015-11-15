@@ -23,7 +23,7 @@ type errorResp struct {
 }
 
 func TestSignUp(t *testing.T) {
-	server, _ := setUpServer(t)
+	server := setUpServer(t)
 	defer server.Close()
 
 	testcases := []struct {
@@ -71,7 +71,7 @@ func TestSignUp(t *testing.T) {
 }
 
 func TestDeleteApplication(t *testing.T) {
-	server, _ := setUpServer(t)
+	server := setUpServer(t)
 	defer server.Close()
 
 	apiToken := createTestUser(server.URL, t)
@@ -145,7 +145,7 @@ func TestDeleteApplication(t *testing.T) {
 }
 
 func TestListApplications(t *testing.T) {
-	server, client := setUpServer(t)
+	server := setUpServer(t)
 	defer server.Close()
 
 	apiToken := createTestUser(server.URL, t)
@@ -197,14 +197,10 @@ func TestListApplications(t *testing.T) {
 			}
 		}
 	}
-
-	// Delete the created application tables.
-	r.DB("test").TableDrop("ronswanson_bestappevar").RunWrite(client.Session)
-	r.DB("test").TableDrop("ronswanson_lol").RunWrite(client.Session)
 }
 
 func TestCreateApplication(t *testing.T) {
-	server, client := setUpServer(t)
+	server := setUpServer(t)
 	defer server.Close()
 
 	apiToken := createTestUser(server.URL, t)
@@ -248,13 +244,10 @@ func TestCreateApplication(t *testing.T) {
 			assert.NotEmpty(t, app.AppToken)
 		}
 	}
-
-	// Delete the created application table.
-	r.DB("test").TableDrop("ronswanson_bestappevar").RunWrite(client.Session)
 }
 
 func TestSignIn(t *testing.T) {
-	server, _ := setUpServer(t)
+	server := setUpServer(t)
 	defer server.Close()
 
 	userAPIToken := createTestUser(server.URL, t)
@@ -318,6 +311,7 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 
 	server, client := setUpServer(t)
 	syncServer := setUpSyncServer(t)
+
 	defer server.Close()
 	defer syncServer.Close()
 
@@ -357,9 +351,6 @@ func TestSaveReadAndDeleteAppDataEndpoints(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&data3)
 	assert.NoError(t, err)
 	assert.Equal(t, interface{}(map[string]interface{}{"error_code": float64(401), "error": "Invalid application token"}), data3)
-
-	// Delete the created application table.
-	r.DB("test").TableDrop("ronswanson_bestappevar").RunWrite(client.Session)
 }
 
 var testUserUsername = "ronswanson"
@@ -415,10 +406,10 @@ func sendJSON(jsonInput, token, url, path, method string, t *testing.T) *http.Re
 	return resp
 }
 
-func setUpServer(t *testing.T) (*httptest.Server, *db.Client) {
+func setUpServer(t *testing.T) *httptest.Server {
 	client := getDBClient(t)
 	mux := server.NewEaseServer(client)
-	return httptest.NewServer(mux), client
+	return httptest.NewServer(mux)
 }
 
 func getDBClient(t *testing.T) *db.Client {
