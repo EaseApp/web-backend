@@ -148,7 +148,7 @@ func sendPublishEvent(app *models.Application, action string, params appDataReqP
 
 	buff := bytes.NewBuffer(nil)
 	json.NewEncoder(buff).Encode(map[string]interface{}{
-		"path":   params.Path,
+		"path":   params.PathStr,
 		"data":   params.Data,
 		"action": action,
 	})
