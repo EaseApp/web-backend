@@ -1,8 +1,10 @@
 package applicationcontroller
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 
@@ -19,6 +21,14 @@ var querier *models.ModelQuerier
 // to have perfect dependency injection practices.
 func Init(querierX *models.ModelQuerier) {
 	querier = querierX
+}
+
+var testingOnlySyncServerURL string
+
+// TestingOnlySetSyncServerURL sets the sync server URL for use in the tests.
+// This is because we can't get the URL ahead of time with httptest.
+func TestingOnlySetSyncServerURL(syncServerURL string) {
+	testingOnlySyncServerURL = syncServerURL
 }
 
 // CreateApplicationHandler handles creating applications for the authenticated user.
@@ -60,9 +70,10 @@ func DeleteApplicationHandler(w http.ResponseWriter, req *http.Request, user *mo
 
 // appDataReqParams holds the params needed for the data handlers below.
 type appDataReqParams struct {
-	PathStr string      `json:"path"`
-	Data    interface{} `json:"data"`
-	Path    lib.Path    `json:"-"`
+	PathStr  string      `json:"path"`
+	Data     interface{} `json:"data"`
+	Path     lib.Path    `json:"-"`
+	Username string      `json:"username"`
 }
 
 var successResponse = struct {
@@ -83,6 +94,8 @@ func SaveApplicationDataHandler(w http.ResponseWriter, req *http.Request, app *m
 		helpers.SendError(http.StatusInternalServerError, friendlyErr, w)
 		return
 	}
+
+	go sendPublishEvent(app, "SAVE", params)
 
 	json.NewEncoder(w).Encode(successResponse)
 }
@@ -121,7 +134,43 @@ func DeleteApplicationDataHandler(w http.ResponseWriter, req *http.Request, app 
 		return
 	}
 
+	go sendPublishEvent(app, "DELETE", params)
+
 	json.NewEncoder(w).Encode(successResponse)
+}
+
+// sendPublishEvent sends a publish event to the sync server.
+func sendPublishEvent(app *models.Application, action string, params appDataReqParams) *http.Response {
+	url := "http://localhost:8000"
+	if testingOnlySyncServerURL != "" {
+		url = testingOnlySyncServerURL
+	}
+
+	buff := bytes.NewBuffer(nil)
+	json.NewEncoder(buff).Encode(map[string]interface{}{
+		"path":   params.PathStr,
+		"data":   params.Data,
+		"action": action,
+	})
+
+	log.Println("Sending Publish Event:", params.Username)
+	resp := sendJSON(buff, app.AppToken, url, "/pub/"+params.Username+"/"+app.TableName, "POST")
+	log.Println("Publish response: ", resp)
+	return resp
+}
+
+func sendJSON(data io.Reader, token, url, path, method string) *http.Response {
+	req, err := http.NewRequest(method, url+path, data)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return resp
 }
 
 // parseAppDataParams parses the given app data params and sends an error if they're invalid.
@@ -141,6 +190,10 @@ func parseAppDataParams(w http.ResponseWriter, req *http.Request) (appDataReqPar
 		helpers.SendError(http.StatusBadRequest, friendlyErr, w)
 		return params, err
 	}
+
+	vars := mux.Vars(req)
+	username := vars["username"]
+	params.Username = username
 
 	return params, nil
 }

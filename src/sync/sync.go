@@ -2,6 +2,7 @@ package sync
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -26,13 +27,14 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-type SyncServer struct {
+// Server holds the router for the sync server.
+type Server struct {
 	r *mux.Router
 }
 
 // ServeHTTP serves requests from the EaseServer's mux while allowing
 // cross origin access.
-func (s *SyncServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+func (s *Server) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if origin := req.Header.Get("Origin"); origin != "" {
 		rw.Header().Set("Access-Control-Allow-Origin", origin)
 		rw.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
@@ -59,9 +61,16 @@ func createRouting(client *db.Client) *mux.Router {
 	return router
 }
 
-func NewSyncServer(client *db.Client) *SyncServer {
+// NewServer creates a new sync server and returns a reference to a sync.Server struct
+func NewServer(client *db.Client) *Server {
 	applications = make(map[string][]Connection)
-	return &SyncServer{r: createRouting(client)}
+	return &Server{r: createRouting(client)}
+}
+
+type applicationParams struct {
+	Username      string `json:"username"`
+	TableName     string `json:"table_name"`
+	Authorization string `json:"authorization"`
 }
 
 // Connection holds connection data
@@ -85,14 +94,29 @@ func subHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	name := string(p)
-
-	applications[name] = append(applications[name], Connection{ws})
-	log.Println(applications)
-
-	if err = ws.WriteMessage(1, p); err != nil {
+	var params applicationParams
+	err = json.NewDecoder(bytes.NewReader(p)).Decode(&params)
+	if err != nil {
 		log.Println(err)
 		return
+	}
+	log.Println("PARAMS:", params)
+
+	if helpers.IsValidAppToken(params.Username, params.TableName, params.Authorization) {
+		// appName := helpers.GetAppName(params.Username, params.TableName)
+		applications[params.TableName] = append(applications[params.TableName], Connection{ws})
+		log.Println(applications)
+		success := `{"status": "success"}`
+		if err = ws.WriteMessage(1, []byte(success)); err != nil {
+			log.Println(err)
+			return
+		}
+	} else {
+		failed := `{"status": "failed"}`
+		if err = ws.WriteMessage(1, []byte(failed)); err != nil {
+			log.Println(err)
+			return
+		}
 	}
 
 	if err != nil {
@@ -124,9 +148,6 @@ func publish(application string, data []byte) {
 
 func decodeData(req *http.Request) ([]byte, error) {
 	bodyBytes, err := ioutil.ReadAll(req.Body)
-
-	// var data JsonData
-	// err := json.NewDecoder(req.Body).Decode(&data)
 	return bodyBytes, err
 }
 
