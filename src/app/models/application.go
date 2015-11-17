@@ -49,7 +49,7 @@ func (querier *ModelQuerier) CreateApplication(user *User, appName string) (*App
 	}
 
 	// Create a table for the new application.
-	_, err = r.DB("test").TableCreate(app.TableName).RunWrite(querier.session)
+	err = r.DB("test").TableCreate(app.TableName).Exec(querier.session)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (querier *ModelQuerier) DeleteApplication(user *User, appName string) (*Use
 	}
 
 	// Drop the app's table.
-	_, err := r.DB("test").TableDrop(appToDelete.TableName).RunWrite(querier.session)
+	err := r.DB("test").TableDrop(appToDelete.TableName).Exec(querier.session)
 	if err != nil {
 		return nil, err
 	}
@@ -116,6 +116,7 @@ func (querier *ModelQuerier) SaveApplicationData(
 		return errors.New("Cannot save data to application root")
 	}
 	res, err := r.Table(app.TableName).Filter(map[string]string{"name": path.TopLevelDocName}).Run(querier.session)
+	defer res.Close()
 	if err != nil {
 		return err
 	}
@@ -144,7 +145,7 @@ func (querier *ModelQuerier) SaveApplicationData(
 	query := path.ToNestedQuery(data)
 
 	// Upsert the given data at the nested path.
-	_, err = r.Table(app.TableName).Get(docID).Update(query).RunWrite(querier.session)
+	err = r.Table(app.TableName).Get(docID).Update(query).Exec(querier.session)
 
 	return err
 }
@@ -155,6 +156,7 @@ func (querier *ModelQuerier) ReadApplicationData(
 	// Send back all the documents if root.
 	if path.IsRoot() {
 		res, err := r.Table(app.TableName).Filter(map[string]string{}).Run(querier.session)
+		defer res.Close()
 		if err != nil {
 			return nil, err
 		}
@@ -174,6 +176,7 @@ func (querier *ModelQuerier) ReadApplicationData(
 	}
 
 	res, err := r.Table(app.TableName).Filter(map[string]string{"name": path.TopLevelDocName}).Run(querier.session)
+	defer res.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -230,14 +233,14 @@ func (querier *ModelQuerier) DeleteApplicationData(
 
 	// Empty the table if the path is root.
 	if path.IsRoot() {
-		_, err := r.Table(app.TableName).Delete().RunWrite(querier.session)
+		err := r.Table(app.TableName).Delete().Exec(querier.session)
 		return err
 	}
 
 	// Delete the top-level doc if the path isn't nested.
 	if len(path.RemainingSegments) == 0 {
-		_, err := r.Table(app.TableName).Filter(map[string]string{
-			"name": path.TopLevelDocName}).Delete().RunWrite(querier.session)
+		err := r.Table(app.TableName).Filter(map[string]string{
+			"name": path.TopLevelDocName}).Delete().Exec(querier.session)
 		return err
 	}
 
@@ -246,6 +249,7 @@ func (querier *ModelQuerier) DeleteApplicationData(
 
 	// The below code is partly taken from ReadApplicationData and can probably be refactored.
 	res, err := r.Table(app.TableName).Filter(map[string]string{"name": path.TopLevelDocName}).Run(querier.session)
+	defer res.Close()
 	if err != nil {
 		return err
 	}
@@ -277,7 +281,7 @@ func (querier *ModelQuerier) DeleteApplicationData(
 		// If this is the last segment, delete it from the map and replace in the db.
 		if idx == len(path.RemainingSegments)-1 {
 			delete(nextMapLevel, segment)
-			_, err = r.Table(app.TableName).Get(doc.ID).Replace(doc).RunWrite(querier.session)
+			err = r.Table(app.TableName).Get(doc.ID).Replace(doc).Exec(querier.session)
 			return err
 		}
 
