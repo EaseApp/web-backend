@@ -76,12 +76,12 @@ func RequireAPIToken(
 }
 
 // IsValidAppToken checks whether the application token provides, is valid for the user and app.
-func IsValidAppToken(username, tableName, appToken string) bool {
-	_, err := querier.AuthenticateApplicationWithTableName(username, tableName, appToken)
+func IsValidAppToken(username, application, appToken string) (*models.Application, bool) {
+	app, err := querier.AuthenticateApplicationWithTableName(username, application, appToken)
 	if err != nil {
-		return false
+		return app, false
 	}
-	return true
+	return app, true
 }
 
 // RequireAppToken requires that the given route has a valid AppToken.

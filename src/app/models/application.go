@@ -111,14 +111,14 @@ func (querier *ModelQuerier) AuthenticateApplication(
 // AuthenticateApplicationWithTableName checks that the given username, table name, and
 // app token are valid, and if so returns the given application.
 func (querier *ModelQuerier) AuthenticateApplicationWithTableName(
-	username, tableName, appToken string) (*Application, error) {
+	username, application, appToken string) (*Application, error) {
 	user := querier.FindUser(username)
 	if user == nil {
 		return nil, errors.New("Couldn't find user with that name")
 	}
 
 	for _, app := range user.Applications {
-		if (app.Name == tableName || app.TableName == tableName) && app.AppToken == appToken {
+		if app.Name == application && app.AppToken == appToken {
 			return &app, nil
 		}
 	}
