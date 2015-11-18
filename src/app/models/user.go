@@ -50,6 +50,7 @@ func (querier *ModelQuerier) FindUserByAPIToken(token string) *User {
 	res, err := r.Table("users").Filter(map[string]string{
 		"api_token": token,
 	}).Run(querier.session)
+	defer res.Close()
 	if err != nil || res.IsNil() {
 		return nil
 	}
@@ -96,6 +97,7 @@ func (querier *ModelQuerier) FindUser(username string) *User {
 	res, err := r.Table("users").Filter(map[string]string{
 		"username": username,
 	}).Run(querier.session)
+	defer res.Close()
 	if err != nil || res.IsNil() {
 		return nil
 	}

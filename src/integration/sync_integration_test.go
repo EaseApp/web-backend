@@ -1,13 +1,14 @@
 package integration
 
 import (
-	"github.com/EaseApp/web-backend/src/app/controllers/applicationcontroller"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/EaseApp/web-backend/src/app/controllers/applicationcontroller"
 
 	"github.com/EaseApp/web-backend/src/sync"
 	"github.com/gorilla/websocket"
@@ -35,7 +36,7 @@ func TestSocketConnection(t *testing.T) {
 			firstSocketResponse:           `{"status": "success"}`,
 			publishTo:                     testApplication.TableName,
 			publishData:                   `{"path":"/hello","data": "world"}`,
-			expectedData:                  `{"action":"SAVE","data":"world","path":{"OriginalString":"/hello","TopLevelDocName":"hello","RemainingSegments":[]}}`,
+			expectedData:                  `{"action":"SAVE","data":"world","path":"/hello"}`,
 			expectedApplicationStatusCode: http.StatusOK,
 		},
 	}
@@ -60,7 +61,7 @@ func TestSocketConnection(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		actual = grabSocketData(conn)
-		expectedDeleteResponse := `{"action":"DELETE","data":"world","path":{"OriginalString":"/hello","TopLevelDocName":"hello","RemainingSegments":[]}}`
+		expectedDeleteResponse := `{"action":"DELETE","data":"world","path":"/hello"}`
 		assert.Equal(t, expectedDeleteResponse, strings.Trim(actual, "\n"))
 	}
 	defer syncServer.Close()
