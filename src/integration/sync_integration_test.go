@@ -31,7 +31,7 @@ func TestSocketConnection(t *testing.T) {
 	}{
 		{
 			// Subscribe to an application, get the relavent data
-			firstSocketMessage:            `{"username": "` + testUser.Username + `", "table_name": "` + testApplication.TableName + `", "authorization": "` + testApplication.AppToken + `"}`,
+			firstSocketMessage:            `{"username": "` + testUser.Username + `", "application": "` + testApplication.TableName + `", "authorization": "` + testApplication.AppToken + `"}`,
 			firstSocketResponse:           `{"status": "success"}`,
 			publishTo:                     testApplication.TableName,
 			publishData:                   `{"path":"/hello","data": "world"}`,
