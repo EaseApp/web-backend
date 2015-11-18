@@ -24,6 +24,7 @@ func NewClient(addr string) (*Client, error) {
 		MaxOpen:  10,
 		Database: "test",
 	})
+	r.SetVerbose(true)
 	if err != nil {
 		log.Println("Error connecting to RethinkdB:")
 		log.Println(err.Error())
