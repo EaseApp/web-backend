@@ -69,7 +69,7 @@ func NewServer(client *db.Client) *Server {
 
 type applicationParams struct {
 	Username      string `json:"username"`
-	Application   string `json:"application"`
+	AppName       string `json:"appName"`
 	Authorization string `json:"authorization"`
 }
 
@@ -102,7 +102,7 @@ func subHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	log.Println("PARAMS:", params)
 
-	app, isValidAppToken := helpers.IsValidAppToken(params.Username, params.Application, params.Authorization)
+	app, isValidAppToken := helpers.IsValidAppToken(params.Username, params.AppName, params.Authorization)
 	if isValidAppToken {
 		applications[app.TableName] = append(applications[app.TableName], Connection{ws})
 		log.Println(applications)
