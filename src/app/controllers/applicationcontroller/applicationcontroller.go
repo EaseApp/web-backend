@@ -35,9 +35,17 @@ func TestingOnlySetSyncServerURL(syncServerURL string) {
 func CreateApplicationHandler(w http.ResponseWriter, req *http.Request, user *models.User) {
 	vars := mux.Vars(req)
 	appName := vars["application"]
+
+	// Check that the application doesn't already exist.
+	for _, app := range user.Applications {
+		if app.Name == appName {
+			helpers.SendError(http.StatusBadRequest, errors.New("An app with that name already exists"), w)
+			return
+		}
+	}
+
 	newApp, err := querier.CreateApplication(user, appName)
 
-	// TODO: Check that the application doesn't already exist.
 	if err != nil {
 		friendlyErr := errors.New("Could not create application")
 		log.Println(friendlyErr.Error() + ".  Error: " + err.Error())
