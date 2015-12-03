@@ -33,3 +33,15 @@ The data API is how users interact with their application data.  The REST API ca
 
 Application data is stored in a JSON format.  
 The API consists of three main endpoints: read, save, and delete.  
+
+## Read Endpoint
+
+### GET /data/{username}/{app_name}
+
+#### Parameters:
+
+`path`: 
+
+Example:
+```
+curl api.easeapp.co
