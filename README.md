@@ -77,5 +77,5 @@ Example:
 ```
 curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' \
 'http://api.easeapp.co/data/easetestuser@example.com/testapp' -X DELETE \
--d '{"path": "/messages","data": ["Hello, world!", "Welcome to Ease!"]}'
+-d '{"path": "/messages"}'
 ```
