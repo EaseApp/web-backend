@@ -47,3 +47,17 @@ Example:
 curl -H "Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY" api.easeapp.co/data/easetestuser@example.com/testapp?path=/
 
 ```
+
+
+## Write Endpoint
+
+### POST /data/{username}/{app_name}
+
+#### Parameters:
+
+`path`: 
+
+Example:
+```
+curl 'http://api.easeapp.co/data/easetestuser@example.com/testapp' -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' -d '{"path": "/messages","data": ["Hello, world!", "Welcome to Ease!"]}'
+```
