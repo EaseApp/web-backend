@@ -61,7 +61,7 @@ curl -H "Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY" \
 Example:
 ```
 curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' \
-'http://api.easeapp.co/data/easetestuser@example.com/testapp' \
+'http://api.easeapp.co/data/easetestuser@example.com/testapp' -X POST \
 -d '{"path": "/messages","data": ["Hello, world!", "Welcome to Ease!"]}'
 ```
 
@@ -76,6 +76,6 @@ curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' \
 Example:
 ```
 curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' \
-'http://api.easeapp.co/data/easetestuser@example.com/testapp' \
+'http://api.easeapp.co/data/easetestuser@example.com/testapp' -X DELETE \
 -d '{"path": "/messages","data": ["Hello, world!", "Welcome to Ease!"]}'
 ```
