@@ -44,7 +44,7 @@ The API consists of three main endpoints: read, save, and delete.
 
 Example:
 ```
-curl -H "Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY" api.easeapp.co/data/easetestuser@example.com/testapp?path=/
+curl -H "Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY" 'http://api.easeapp.co/data/easetestuser@example.com/testapp?path=/'
 
 ```
 
@@ -59,5 +59,6 @@ curl -H "Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY" api.easeapp.co/data/ease
 
 Example:
 ```
-curl 'http://api.easeapp.co/data/easetestuser@example.com/testapp' -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' -d '{"path": "/messages","data": ["Hello, world!", "Welcome to Ease!"]}'
+curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' 'http://api.easeapp.co/data/easetestuser@example.com/testapp' \
+-d '{"path": "/messages","data": ["Hello, world!", "Welcome to Ease!"]}'
 ```
