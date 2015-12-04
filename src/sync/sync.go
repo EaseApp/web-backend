@@ -133,15 +133,15 @@ func publish(application string, data []byte) {
 		w, err := element.Conn.NextWriter(1)
 		if err != nil {
 			log.Println(err)
-			return
+			continue
 		}
 		if _, err := io.Copy(w, bytes.NewReader(data)); err != nil {
 			log.Println(err)
-			return
+			continue
 		}
 		if err := w.Close(); err != nil {
 			log.Println(err)
-			return
+			continue
 		}
 	}
 }
