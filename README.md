@@ -103,3 +103,7 @@ Received messages from the sync service have a data property that contain the fo
 Action - the operation that was performed
 Path - the location in which the data was affected
 Data - the data that is now stored in that path
+
+## Example Application
+
+To see an example of Ease in action, check out the Ease [web chat repo](https://github.com/EaseApp/chat-repo).  To see it running live, check it out [here](http://easeapp.github.io/chat-demo/).
