@@ -40,7 +40,7 @@ The API consists of three main endpoints: read, save, and delete.
 
 #### Parameters:
 
-`path`: 
+`path`:  This is the path of where to read the data.
 
 Example:
 ```
@@ -56,7 +56,10 @@ curl -H "Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY" \
 
 #### Parameters:
 
-`path`: 
+The endpoint takes two JSON parameters:
+
+`path`: This is the path of where to save the data.  
+`data`: This is the data to save.  It can be any JSON data.
 
 Example:
 ```
@@ -65,13 +68,15 @@ curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' \
 -d '{"path": "/messages","data": ["Hello, world!", "Welcome to Ease!"]}'
 ```
 
-## Write Endpoint
+## Delete Endpoint
 
 ### POST /data/{username}/{app_name}
 
 #### Parameters:
 
-`path`: 
+The delete endpoint takes one JSON parameter.
+
+`path`: This is the JSON path of the data to be deleted.
 
 Example:
 ```
