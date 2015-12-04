@@ -31,7 +31,8 @@ Visit `localhost:3000` to see the hello world.
 
 The data API is how users interact with their application data.  The REST API can be accessed from any language or runtime.  Ease also has client libraries for [JavaScript](https://github.com/EaseApp/javascript-client), [Java (Android)](https://github.com/EaseApp/java-client), and [Swift (iOS)](https://github.com/EaseApp/ios-client) to make accessing these endpoints easier.
 
-Application data is stored in a JSON format.  
+Application data is stored in JSON format. It can be accessed using JSON paths in the form `/users/ryan/messages`.   TODO.
+
 The API consists of three main endpoints: read, save, and delete.  
 
 ## Read Endpoint
