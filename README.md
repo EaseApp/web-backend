@@ -44,7 +44,8 @@ The API consists of three main endpoints: read, save, and delete.
 
 Example:
 ```
-curl -H "Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY" 'http://api.easeapp.co/data/easetestuser@example.com/testapp?path=/'
+curl -H "Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY" \
+'http://api.easeapp.co/data/easetestuser@example.com/testapp?path=/'
 
 ```
 
@@ -59,6 +60,22 @@ curl -H "Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY" 'http://api.easeapp.co/d
 
 Example:
 ```
-curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' 'http://api.easeapp.co/data/easetestuser@example.com/testapp' \
+curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' \
+'http://api.easeapp.co/data/easetestuser@example.com/testapp' \
+-d '{"path": "/messages","data": ["Hello, world!", "Welcome to Ease!"]}'
+```
+
+## Write Endpoint
+
+### POST /data/{username}/{app_name}
+
+#### Parameters:
+
+`path`: 
+
+Example:
+```
+curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' \
+'http://api.easeapp.co/data/easetestuser@example.com/testapp' \
 -d '{"path": "/messages","data": ["Hello, world!", "Welcome to Ease!"]}'
 ```
