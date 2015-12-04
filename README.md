@@ -85,3 +85,21 @@ curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' \
 'http://api.easeapp.co/data/easetestuser@example.com/testapp' -X DELETE \
 -d '{"path": "/messages"}'
 ```
+
+## Sync Endpoint for Realtime
+
+The sync document
+
+Sync gets passed a JSON object that has three properties:
+
+username - the username that the application is registered under
+appName - the name of the application that you want to get notifications for through the sync service
+authorization - the application token for the associated application, this is used to authenticate the connection
+
+Once this information has been sent to the sync service, the sync service will begin to pass back the sync information back as things are updated on the application.
+
+Received messages from the sync service have a data property that contain the following information:
+
+Action - the operation that was performed
+Path - the location in which the data was affected
+Data - the data that is now stored in that path
