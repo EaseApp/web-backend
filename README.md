@@ -88,21 +88,39 @@ curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' \
 
 ## Sync Endpoint for Realtime
 
-The sync document
+The sync service allow a user to get real time updates via websockets. The Javascript library has abstracted the websocket connection, so you can use the connect() function. If you want to manually connect to Sync, first open make a TCP websocket connection to ws://sync.easeapp.co:8000. After successful connection, send a string representation of a JSON document with the following three attributes. 
 
-Sync gets passed a JSON object that has three properties:
+```
+{
+  "username":"test",
+  "appName":"test",
+  "authorization":"abc"
+}
+```
 
-username - the username that the application is registered under
-appName - the name of the application that you want to get notifications for through the sync service
-authorization - the application token for the associated application, this is used to authenticate the connection
+| username | The username that the application is registered under |
+| appName | The name of the application that you want to get notifications for through the sync service |
+| authorization | The application token for the associated application, this is used to authenticate the connection |
 
-Once this information has been sent to the sync service, the sync service will begin to pass back the sync information back as things are updated on the application.
+On successful authentication, the connection server will send back:
+```
+{
+  "status":"successful"
+}
+```
 
-Received messages from the sync service have a data property that contain the following information:
+The sync service will begin to pass back the sync information back as things are updated on the application in the following format:
+```
+{
+  "action": "SAVE",
+  "data": yourData, 
+  "path": "/"
+}
+```
 
-Action - the operation that was performed
-Path - the location in which the data was affected
-Data - the data that is now stored in that path
+| action | The operation that was performed. Valid actions are "SAVE" and "DELETE" |
+| path | The location in which the data was affected |
+| data | The data that is now stored in that path |
 
 # Example Application
 
