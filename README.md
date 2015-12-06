@@ -92,9 +92,9 @@ The sync service allow a user to get real time updates via websockets. The Javas
 
 ```
 {
-  "username":"test",
-  "appName":"test",
-  "authorization":"abc"
+  "username":"easetestuser@example.com",
+  "appName":"testapp",
+  "authorization":"JzlaHSLCZdFDqKjYLonmyjFkhXFkYY"
 }
 ```
 
