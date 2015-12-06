@@ -86,7 +86,7 @@ curl -H 'Authorization: JzlaHSLCZdFDqKjYLonmyjFkhXFkYY' \
 -d '{"path": "/messages"}'
 ```
 
-## Sync Endpoint for Realtime
+## Sync Endpoint for Realtime Updates
 
 The sync service allow a user to get real time updates via websockets. The Javascript library has abstracted the websocket connection, so you can use the connect() function. If you want to manually connect to Sync, first open make a TCP websocket connection to ws://sync.easeapp.co:8000. After successful connection, send a string representation of a JSON document with the following three attributes. 
 
@@ -97,7 +97,8 @@ The sync service allow a user to get real time updates via websockets. The Javas
   "authorization":"JzlaHSLCZdFDqKjYLonmyjFkhXFkYY"
 }
 ```
-
+| Attribute | Description |
+|:--|:--|
 | username | The username that the application is registered under |
 | appName | The name of the application that you want to get notifications for through the sync service |
 | authorization | The application token for the associated application, this is used to authenticate the connection |
@@ -118,6 +119,8 @@ The sync service will begin to pass back the sync information back as things are
 }
 ```
 
+| Attribute | Description |
+|:--|:--|
 | action | The operation that was performed. Valid actions are "SAVE" and "DELETE" |
 | path | The location in which the data was affected |
 | data | The data that is now stored in that path |
