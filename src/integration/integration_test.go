@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/EaseApp/web-backend/src/app/controllers/applicationcontroller"
 	"github.com/EaseApp/web-backend/src/app/models"
@@ -55,6 +56,7 @@ func TestSignUp(t *testing.T) {
 
 	for _, testcase := range testcases {
 		resp := sendJSON(testcase.input, "", server.URL, "/users/sign_up", "POST", t)
+		time.Sleep(time.Millisecond * 100)
 
 		assert.Equal(t, testcase.expectedCode, resp.StatusCode)
 
