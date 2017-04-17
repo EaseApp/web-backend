@@ -1,3 +1,4 @@
+[![Build Status](https://drone.io/github.com/EaseApp/web-backend/status.png)](https://drone.io/github.com/EaseApp/web-backend/latest)
 # Ease Web Backend
 
 ![Build Status](https://travis-ci.org/EaseApp/web-backend.svg?branch=master)
